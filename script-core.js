@@ -140,14 +140,30 @@ function importGraph(event) {
 }
 
 function importGraphFromData(data) {
+  // 🔁 Acepta tanto nombres en inglés como en español
   nodos = data.nodos || data.nodes || [];
   enlaces = data.enlaces || data.edges || [];
   personas = data.personas || data.people || [];
-  document.getElementById("canvasContent").innerHTML = "";
+
+  // Limpia el canvas antes de renderizar
+  const canvas = document.getElementById("canvasContent");
+  canvas.innerHTML = "";
+
+  // Renderiza los nodos
   nodos.forEach((n) => renderNode(n));
-  renderPersonList();
+
+  // Si hay personas, las carga también
+  if (personas.length) {
+    personas.forEach((p) => {
+      if (!window.personas.includes(p)) window.personas.push(p);
+    });
+    renderPersonList();
+  }
+
   updateSummary();
+  console.log(`✅ Grafo importado correctamente (${nodos.length} nodos, ${enlaces.length} enlaces)`);
 }
+
 
 /* ============================================================
    RESUMEN DE CARGA
@@ -176,4 +192,5 @@ function updateSummary() {
    ============================================================ */
 
 console.log("✅ script-core.js cargado correctamente");
+
 
