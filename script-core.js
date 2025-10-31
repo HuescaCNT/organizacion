@@ -149,11 +149,33 @@ function importGraphFromData(data) {
   const canvas = document.getElementById("canvasContent");
   canvas.innerHTML = "";
 
-  // Renderiza los nodos
-  nodos.forEach((n) => renderNode(n));
+  // Renderiza nodos con comprobaciones de seguridad
+  nodos.forEach((n) => {
+    // Normaliza claves: algunos JSON usan 'label' o 'name' en vez de 'nombre'
+    const nombre = n.nombre || n.name || n.label || "Nodo sin nombre";
+    const owner = n.owner || n.propietario || "";
+    const horas = n.horas || n.hours || 0;
+    const descripcion = n.descripcion || n.description || "";
 
-  // Si hay personas, las carga también
-  if (personas.length) {
+    // Crea el nodo visual
+    const div = document.createElement("div");
+    div.className = "node";
+    div.style.left = (n.x || Math.random() * 800) + "px";
+    div.style.top = (n.y || Math.random() * 600) + "px";
+    div.textContent = nombre;
+    div.dataset.id = n.id || nombre;
+    div.onclick = () => openPopup({
+      id: n.id,
+      nombre,
+      owner,
+      horas,
+      descripcion,
+    });
+    canvas.appendChild(div);
+  });
+
+  // Añade las personas si existen
+  if (Array.isArray(personas)) {
     personas.forEach((p) => {
       if (!window.personas.includes(p)) window.personas.push(p);
     });
@@ -192,5 +214,6 @@ function updateSummary() {
    ============================================================ */
 
 console.log("✅ script-core.js cargado correctamente");
+
 
 
