@@ -13,6 +13,8 @@ let personas = [];
 function addPerson() {
   const nombre = document.getElementById("newPersonName").value.trim();
   if (!nombre) return alert("Introduce un nombre");
+
+  if (!Array.isArray(personas)) personas = [];
   if (personas.includes(nombre)) return alert("Esa persona ya está añadida.");
 
   personas.push(nombre);
@@ -35,8 +37,10 @@ function renderPersonList() {
 function actualizarSelects() {
   const selects = document.querySelectorAll("select");
   selects.forEach((sel) => {
-    if (sel.id.includes("Owner")) {
-      sel.innerHTML = personas.map((p) => `<option value="${p}">${p}</option>`).join("");
+    if ((sel.id || "").includes("Owner")) {
+      sel.innerHTML = personas
+        .map((p) => `<option value="${p}">${p}</option>`)
+        .join("");
     }
   });
 }
@@ -97,7 +101,7 @@ function renderNode(nodo) {
   div.className = "node";
   div.style.left = nodo.x + "px";
   div.style.top = nodo.y + "px";
-  div.textContent = nodo.nombre;
+  div.textContent = nodo.nombre || "Nodo sin nombre";
   div.dataset.id = nodo.id;
   div.onclick = () => openPopup(nodo);
   document.getElementById("canvasContent").appendChild(div);
@@ -109,7 +113,7 @@ function renderNode(nodo) {
 
 function openPopup(nodo) {
   const popup = document.getElementById("popup");
-  document.getElementById("editName").value = nodo.nombre;
+  document.getElementById("editName").value = nodo.nombre || "";
   document.getElementById("editOwner").value = nodo.owner || "";
   document.getElementById("editHours").value = nodo.horas || "";
   document.getElementById("editDescription").value = nodo.descripcion || "";
@@ -185,28 +189,55 @@ function importGraphFromData(data) {
     canvas.appendChild(div);
   });
 
-  // Registra enlaces si existen
-  if (Array.isArray(enlaces)) {
-    enlaces.forEach((e) => {
-      const source = e.origen || e.source;
-      const target = e.destino || e.target;
-      if (!source || !target) return;
-      console.log(`🔗 Enlace: ${source} → ${target}`);
-    });
-  }
+  // Dibuja enlaces visuales entre nodos
+  drawEdges();
 
   // Carga lista de personas
+  if (!Array.isArray(window.personas)) window.personas = [];
   if (Array.isArray(personas)) {
     personas.forEach((p) => {
       if (!window.personas.includes(p)) window.personas.push(p);
     });
-    renderPersonList();
   }
+  renderPersonList();
 
   updateSummary();
   console.log(`✅ Grafo importado correctamente (${nodos.length} nodos, ${enlaces.length} enlaces)`);
 }
 
+/* ============================================================
+   DIBUJO DE ENLACES ENTRE NODOS
+   ============================================================ */
+
+function drawEdges() {
+  const canvas = document.getElementById("canvasContent");
+
+  enlaces.forEach((e) => {
+    const sourceId = e.origen || e.source;
+    const targetId = e.destino || e.target;
+    const source = nodos.find((n) => n.id === sourceId);
+    const target = nodos.find((n) => n.id === targetId);
+    if (!source || !target) return;
+
+    const x1 = (source.x || 0) + 60;
+    const y1 = (source.y || 0) + 20;
+    const x2 = (target.x || 0) + 60;
+    const y2 = (target.y || 0) + 20;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    const line = document.createElement("div");
+    line.className = "edge";
+    line.style.width = length + "px";
+    line.style.left = x1 + "px";
+    line.style.top = y1 + "px";
+    line.style.transform = `rotate(${angle}deg)`;
+    canvas.appendChild(line);
+  });
+}
 
 /* ============================================================
    RESUMEN DE CARGA
@@ -219,7 +250,8 @@ function updateSummary() {
 
   nodos.forEach((n) => {
     if (n.owner) {
-      horasPorPersona[n.owner] = (horasPorPersona[n.owner] || 0) + (n.horas || 0);
+      horasPorPersona[n.owner] =
+        (horasPorPersona[n.owner] || 0) + (n.horas || 0);
     }
   });
 
