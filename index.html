@@ -272,7 +272,7 @@ async function loadAvailableGraphs() {
   select.innerHTML = '<option value="">-- Selecciona un archivo --</option>';
 
   try {
-   const response = await fetch(location.pathname.includes("organizacion") ? "./organizacion/graphs.json" : "./graphs.json");
+    const response = await fetch("./graphs.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const text = await response.text();
@@ -335,6 +335,7 @@ window.addEventListener("DOMContentLoaded", loadAvailableGraphs);
     const canvasContent = document.getElementById("canvasContent");
     const zoomInBtn = document.getElementById("zoomInBtn");
     const zoomOutBtn = docume
+
 
 
 
