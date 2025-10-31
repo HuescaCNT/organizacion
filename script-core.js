@@ -140,41 +140,62 @@ function importGraph(event) {
 }
 
 function importGraphFromData(data) {
-  // 🔁 Acepta tanto nombres en inglés como en español
+  // Acepta nombres en inglés o español
   nodos = data.nodos || data.nodes || [];
   enlaces = data.enlaces || data.edges || [];
   personas = data.personas || data.people || [];
 
-  // Limpia el canvas antes de renderizar
   const canvas = document.getElementById("canvasContent");
   canvas.innerHTML = "";
 
-  // Renderiza nodos con comprobaciones de seguridad
+  // 🔧 Comprobaciones seguras para cada nodo
   nodos.forEach((n) => {
-    // Normaliza claves: algunos JSON usan 'label' o 'name' en vez de 'nombre'
-    const nombre = n.nombre || n.name || n.label || "Nodo sin nombre";
+    const id = n.id || crypto.randomUUID();
+    const nombre = n.nombre || n.name || n.label || `Nodo ${id}`;
     const owner = n.owner || n.propietario || "";
     const horas = n.horas || n.hours || 0;
     const descripcion = n.descripcion || n.description || "";
 
-    // Crea el nodo visual
+    // Crear el elemento visual del nodo
     const div = document.createElement("div");
     div.className = "node";
-    div.style.left = (n.x || Math.random() * 800) + "px";
-    div.style.top = (n.y || Math.random() * 600) + "px";
+    div.style.left = (n.x || Math.random() * 1000) + "px";
+    div.style.top = (n.y || Math.random() * 800) + "px";
+    div.dataset.id = id;
     div.textContent = nombre;
-    div.dataset.id = n.id || nombre;
-    div.onclick = () => openPopup({
-      id: n.id,
-      nombre,
-      owner,
-      horas,
-      descripcion,
-    });
+
+    // Evita fallos si falta alguna propiedad
+    div.onclick = () => {
+      const info = {
+        id,
+        nombre,
+        owner,
+        horas,
+        descripcion,
+        super: n.super || ""
+      };
+      if (typeof openPopup === "function") {
+        openPopup(info);
+      } else {
+        console.log("ℹ️ Nodo:", info);
+      }
+    };
+
     canvas.appendChild(div);
   });
 
-  // Añade las personas si existen
+  // 🔗 Renderiza los enlaces si existen
+  if (Array.isArray(enlaces)) {
+    enlaces.forEach((e) => {
+      const source = e.origen || e.source;
+      const target = e.destino || e.target;
+      if (!source || !target) return;
+      // No hacemos nada visual todavía, solo registramos
+      console.log(`Enlace: ${source} → ${target}`);
+    });
+  }
+
+  // 👥 Añadir lista de personas
   if (Array.isArray(personas)) {
     personas.forEach((p) => {
       if (!window.personas.includes(p)) window.personas.push(p);
@@ -214,6 +235,7 @@ function updateSummary() {
    ============================================================ */
 
 console.log("✅ script-core.js cargado correctamente");
+
 
 
 
