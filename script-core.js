@@ -140,9 +140,9 @@ function importGraph(event) {
 }
 
 function importGraphFromData(data) {
-  nodos = data.nodos || [];
-  enlaces = data.enlaces || [];
-  personas = data.personas || [];
+  nodos = data.nodos || data.nodes || [];
+  enlaces = data.enlaces || data.edges || [];
+  personas = data.personas || data.people || [];
   document.getElementById("canvasContent").innerHTML = "";
   nodos.forEach((n) => renderNode(n));
   renderPersonList();
@@ -176,3 +176,4 @@ function updateSummary() {
    ============================================================ */
 
 console.log("✅ script-core.js cargado correctamente");
+
