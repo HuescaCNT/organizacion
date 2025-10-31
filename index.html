@@ -256,6 +256,78 @@
   <script src="script-core.js"></script>
   <script src="script-edit.js"></script>
   <script src="script-collapse.js"></script>
+  
+  <script>
+  
+/* ============================================================
+   CARGA DE GRAFOS DESDE graphs.json
+   ============================================================ */
+async function loadAvailableGraphs() {
+  const select = document.getElementById("jsonSelect");
+  if (!select) {
+    console.error("⚠️ No se encontró el select #jsonSelect en el DOM");
+    return;
+  }
+
+  select.innerHTML = '<option value="">-- Selecciona un archivo --</option>';
+
+  try {
+    const response = await fetch("./graphs.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const text = await response.text();
+    console.log("📄 graphs.json cargado:", text);
+
+    let files;
+    try {
+      files = JSON.parse(text);
+    } catch (e) {
+      throw new Error("❌ Error al parsear graphs.json: " + e.message);
+    }
+
+    if (!Array.isArray(files)) throw new Error("❌ graphs.json no es un array válido.");
+
+    files.forEach(file => {
+      const opt = document.createElement("option");
+      opt.value = file.trim();
+      opt.textContent = file.split("/").pop();
+      select.appendChild(opt);
+    });
+
+    console.log(`✅ ${files.length} grafos encontrados`);
+  } catch (err) {
+    console.error("🚨 Error al cargar graphs.json:", err);
+  }
+}
+
+/* ============================================================
+   CARGA DE UN GRAFO SELECCIONADO
+   ============================================================ */
+async function loadSelectedGraph() {
+  const select = document.getElementById("jsonSelect");
+  const file = select.value;
+  if (!file) return alert("Selecciona un archivo primero");
+
+  try {
+    const res = await fetch(file);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (typeof importGraphFromData === "function") {
+      importGraphFromData(data);
+    } else {
+      alert("Falta la función importGraphFromData() en script-core.js");
+    }
+  } catch (err) {
+    console.error("🚨 Error al cargar el JSON:", err);
+  }
+}
+
+/* ============================================================
+   EJECUTAR AUTOMÁTICAMENTE AL CARGAR LA PÁGINA
+   ============================================================ */
+window.addEventListener("DOMContentLoaded", loadAvailableGraphs);
+</script>
 
   <script>
   (() => {
@@ -263,4 +335,5 @@
     const canvasContent = document.getElementById("canvasContent");
     const zoomInBtn = document.getElementById("zoomInBtn");
     const zoomOutBtn = docume
+
 
