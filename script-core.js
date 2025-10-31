@@ -140,6 +140,8 @@ function importGraph(event) {
 }
 
 function importGraphFromData(data) {
+  console.log("🔄 Importando grafo...");
+
   // Acepta nombres en inglés o español
   nodos = data.nodos || data.nodes || [];
   enlaces = data.enlaces || data.edges || [];
@@ -148,7 +150,7 @@ function importGraphFromData(data) {
   const canvas = document.getElementById("canvasContent");
   canvas.innerHTML = "";
 
-  // 🔧 Comprobaciones seguras para cada nodo
+  // Crea nodos de manera segura
   nodos.forEach((n) => {
     const id = n.id || crypto.randomUUID();
     const nombre = n.nombre || n.name || n.label || `Nodo ${id}`;
@@ -156,15 +158,14 @@ function importGraphFromData(data) {
     const horas = n.horas || n.hours || 0;
     const descripcion = n.descripcion || n.description || "";
 
-    // Crear el elemento visual del nodo
     const div = document.createElement("div");
     div.className = "node";
-    div.style.left = (n.x || Math.random() * 1000) + "px";
-    div.style.top = (n.y || Math.random() * 800) + "px";
+    div.style.left = (n.x || Math.random() * 800) + "px";
+    div.style.top = (n.y || Math.random() * 600) + "px";
     div.dataset.id = id;
     div.textContent = nombre;
 
-    // Evita fallos si falta alguna propiedad
+    // Muestra información del nodo al hacer clic
     div.onclick = () => {
       const info = {
         id,
@@ -172,7 +173,7 @@ function importGraphFromData(data) {
         owner,
         horas,
         descripcion,
-        super: n.super || ""
+        super: n.super || "",
       };
       if (typeof openPopup === "function") {
         openPopup(info);
@@ -184,18 +185,17 @@ function importGraphFromData(data) {
     canvas.appendChild(div);
   });
 
-  // 🔗 Renderiza los enlaces si existen
+  // Registra enlaces si existen
   if (Array.isArray(enlaces)) {
     enlaces.forEach((e) => {
       const source = e.origen || e.source;
       const target = e.destino || e.target;
       if (!source || !target) return;
-      // No hacemos nada visual todavía, solo registramos
-      console.log(`Enlace: ${source} → ${target}`);
+      console.log(`🔗 Enlace: ${source} → ${target}`);
     });
   }
 
-  // 👥 Añadir lista de personas
+  // Carga lista de personas
   if (Array.isArray(personas)) {
     personas.forEach((p) => {
       if (!window.personas.includes(p)) window.personas.push(p);
@@ -235,6 +235,7 @@ function updateSummary() {
    ============================================================ */
 
 console.log("✅ script-core.js cargado correctamente");
+
 
 
 
