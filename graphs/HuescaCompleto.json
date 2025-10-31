@@ -1,0 +1,769 @@
+{
+  "nodes": [
+    {
+      "id": "node_1",
+      "name": "Dinamizar Secciones Sindicales Huesca",
+      "owner": "Gorka",
+      "hours": "2",
+      "description": "Contactar periódicamente a cada sección sindical para ver cómo estar y sus necesidades. Reunirse con ellas.",
+      "super": "super_1",
+      "type": "sub",
+      "left": "19px",
+      "top": "753px"
+    },
+    {
+      "id": "node_2",
+      "name": "Asesorías en Huesca",
+      "owner": "Gorka",
+      "hours": "8",
+      "description": "Atender y resolver las asesorías laborales, tanto de manera telefónica como vía email.",
+      "super": "super_1",
+      "type": "sub",
+      "left": "529px",
+      "top": "954px"
+    },
+    {
+      "id": "super_1",
+      "name": "Sindical",
+      "owner": "Gorka",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "471px",
+      "top": "717px"
+    },
+    {
+      "id": "super_2",
+      "name": "Asamblea",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "",
+      "type": "super",
+      "left": "902px",
+      "top": "469px"
+    },
+    {
+      "id": "node_3",
+      "name": "Administrar redes",
+      "owner": "Amalia",
+      "hours": "7",
+      "description": "Estar pendiente de compartir y subir materiales afines en redes.",
+      "super": "super_3",
+      "type": "sub",
+      "left": "1179px",
+      "top": "24px"
+    },
+    {
+      "id": "node_4",
+      "name": "Generar materiales",
+      "owner": "Amalia",
+      "hours": "8",
+      "description": "Producir cartelería, logos, notas de prensa y materiales de difusión",
+      "super": "super_3",
+      "type": "sub",
+      "left": "998px",
+      "top": "22px"
+    },
+    {
+      "id": "super_3",
+      "name": "Comunicación",
+      "owner": "Amalia",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "1074px",
+      "top": "216px"
+    },
+    {
+      "id": "super_4",
+      "name": "Organización",
+      "owner": "Juan",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "1360px",
+      "top": "234px"
+    },
+    {
+      "id": "node_5",
+      "name": "Checkear al resto de grupos",
+      "owner": "Juan",
+      "hours": "4",
+      "description": "",
+      "super": "super_4",
+      "type": "sub",
+      "left": "1714px",
+      "top": "30px"
+    },
+    {
+      "id": "node_7",
+      "name": "Asistir a plenos y plenarias",
+      "owner": "Juan",
+      "hours": "2",
+      "description": "Acudir a plenos y plenarias regionales.Acudir a plenos y plenarias confederales. Hay una al mes aproximadamente.",
+      "super": "super_5",
+      "type": "sub",
+      "left": "25px",
+      "top": "135px"
+    },
+    {
+      "id": "super_5",
+      "name": "General",
+      "owner": "Juan",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "446px",
+      "top": "213px"
+    },
+    {
+      "id": "node_8",
+      "name": "Leer Eliseo",
+      "owner": "",
+      "hours": "4",
+      "description": "Leer todos los documentos internos que llegan a Eliseo y comunicar a la afiliación un resumen.",
+      "super": "super_5",
+      "type": "sub",
+      "left": "34px",
+      "top": "27px"
+    },
+    {
+      "id": "super_6",
+      "name": "Jurídica",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "685px",
+      "top": "211px"
+    },
+    {
+      "id": "node_9",
+      "name": "Cobro de casos",
+      "owner": "",
+      "hours": "4",
+      "description": "Realizar los cobros de los costes judiciales. Estar encima para que la gente pague.",
+      "super": "super_6",
+      "type": "sub",
+      "left": "251px",
+      "top": "23px"
+    },
+    {
+      "id": "node_10",
+      "name": "Declarar a Hacienda",
+      "owner": "",
+      "hours": "2",
+      "description": "Encargarse de las tareas referentes a la declaración de cobros a Hacienda.",
+      "super": "super_6",
+      "type": "sub",
+      "left": "778px",
+      "top": "23px"
+    },
+    {
+      "id": "node_12",
+      "name": "Recopilar información de los casos",
+      "owner": "",
+      "hours": "4",
+      "description": "Solicitar una serie de papeles necesarios y acumularlos hasta la judicialización. Hacer de enlace entre la abogada y el sindicato con repasos de los casos cada 3 meses.",
+      "super": "super_6",
+      "type": "sub",
+      "left": "479px",
+      "top": "22px"
+    },
+    {
+      "id": "node_13",
+      "name": "Redactar escritos a empresas",
+      "owner": "",
+      "hours": "3",
+      "description": "Realizar y enviar por burofax y email los distintos escritos a empresas",
+      "super": "super_1",
+      "type": "sub",
+      "left": "80px",
+      "top": "951px"
+    },
+    {
+      "id": "node_14",
+      "name": "Asesorías en Jaca",
+      "owner": "Lorena",
+      "hours": "3",
+      "description": "Atender el servicio de asesorías de Jaca",
+      "super": "super_1",
+      "type": "sub",
+      "left": "340px",
+      "top": "952px"
+    },
+    {
+      "id": "super_7",
+      "name": "Comisión de agresiones",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "",
+      "type": "super",
+      "left": "834px",
+      "top": "1121px"
+    },
+    {
+      "id": "node_15",
+      "name": "Miembro 1 (Mujer):",
+      "owner": "",
+      "hours": "1",
+      "description": "Atender los posibles casos de agresiones",
+      "super": "super_7",
+      "type": "sub",
+      "left": "1184px",
+      "top": "1080px"
+    },
+    {
+      "id": "node_16",
+      "name": "Miembro 2 (Mujer):",
+      "owner": "",
+      "hours": "1",
+      "description": "Atender los posibles casos de agresiones",
+      "super": "super_7",
+      "type": "sub",
+      "left": "1182px",
+      "top": "1176px"
+    },
+    {
+      "id": "node_17",
+      "name": "Miembro 3:",
+      "owner": "",
+      "hours": "1",
+      "description": "Atender los posibles casos de agresiones",
+      "super": "super_7",
+      "type": "sub",
+      "left": "573px",
+      "top": "1069px"
+    },
+    {
+      "id": "node_18",
+      "name": "Miembro 4:",
+      "owner": "",
+      "hours": "1",
+      "description": "Atender los posibles casos de agresiones",
+      "super": "super_7",
+      "type": "sub",
+      "left": "558px",
+      "top": "1177px"
+    },
+    {
+      "id": "super_8",
+      "name": "Local",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "",
+      "type": "super",
+      "left": "1674px",
+      "top": "1165px"
+    },
+    {
+      "id": "node_19",
+      "name": "Apertura y limpieza",
+      "owner": "Alex",
+      "hours": "2.5",
+      "description": "Abrir los jueves de 18:30 a 21:00",
+      "super": "super_8",
+      "type": "sub",
+      "left": "1471px",
+      "top": "1162px"
+    },
+    {
+      "id": "node_20",
+      "name": "Contacto con otras organizaciones",
+      "owner": "",
+      "hours": "4",
+      "description": "Identificar organizaciones a nivel de ciudad, estatal e internacional y buscar sinergias",
+      "super": "super_9",
+      "type": "sub",
+      "left": "1662px",
+      "top": "340px"
+    },
+    {
+      "id": "super_9",
+      "name": "Relaciones exteriores",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "1318px",
+      "top": "382px"
+    },
+    {
+      "id": "super_10",
+      "name": "Nuevas tecnologías",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "447px",
+      "top": "380px"
+    },
+    {
+      "id": "node_21",
+      "name": "Mejoras tecnológicas",
+      "owner": "",
+      "hours": "4",
+      "description": "Identificar y resolver tareas fácilmente automatizables y mejorar protocolos de seguridad",
+      "super": "super_10",
+      "type": "sub",
+      "left": "33px",
+      "top": "226px"
+    },
+    {
+      "id": "super_11",
+      "name": "Acción Social",
+      "owner": "Miguel",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "448px",
+      "top": "520px"
+    },
+    {
+      "id": "node_22",
+      "name": "Organizar actividades sociales 1",
+      "owner": "Miguel",
+      "hours": "4",
+      "description": "Identificar actividades sociales interesantes para el sindicato y encargarse de su organización",
+      "super": "super_11",
+      "type": "sub",
+      "left": "18px",
+      "top": "324px"
+    },
+    {
+      "id": "node_23",
+      "name": "Organizar actividades sociales 2",
+      "owner": "",
+      "hours": "4",
+      "description": "Identificar actividades sociales interesantes para el sindicato y encargarse de su organización",
+      "super": "super_11",
+      "type": "sub",
+      "left": "28px",
+      "top": "444px"
+    },
+    {
+      "id": "node_24",
+      "name": "Organizar actividades sociales 3",
+      "owner": "",
+      "hours": "4",
+      "description": "Identificar actividades sociales interesantes para el sindicato y encargarse de su organización",
+      "super": "super_11",
+      "type": "sub",
+      "left": "27px",
+      "top": "548px"
+    },
+    {
+      "id": "node_25",
+      "name": "Organizar actividades sociales 4",
+      "owner": "",
+      "hours": "4",
+      "description": "Identificar actividades sociales interesantes para el sindicato y encargarse de su organización",
+      "super": "super_11",
+      "type": "sub",
+      "left": "23px",
+      "top": "655px"
+    },
+    {
+      "id": "node_26",
+      "name": "Dinamizar Secciones Sindicales Pirineos",
+      "owner": "Amalia",
+      "hours": "2",
+      "description": "Contactar periódicamente a cada una para ver cómo están y sus necesidades",
+      "super": "super_1",
+      "type": "sub",
+      "left": "17px",
+      "top": "850px"
+    },
+    {
+      "id": "node_27",
+      "name": "Bienvenida",
+      "owner": "",
+      "hours": "4",
+      "description": "Dar la bienvenida a nuevas afiliaciones, comunicar los grupos de trabajo y hacer seguimiento de la adaptación",
+      "super": "super_4",
+      "type": "sub",
+      "left": "1741px",
+      "top": "239px"
+    },
+    {
+      "id": "node_28",
+      "name": "Convocar asambleas",
+      "owner": "Juan",
+      "hours": "1",
+      "description": "Recopilar los puntos de las asambleas y enviar comunicaciones a la afiliación para que asistan.",
+      "super": "super_4",
+      "type": "sub",
+      "left": "1770px",
+      "top": "136px"
+    },
+    {
+      "id": "super_12",
+      "name": "Tesorería",
+      "owner": "Gemma",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "1390px",
+      "top": "531px"
+    },
+    {
+      "id": "node_29",
+      "name": "Cobro cuotas",
+      "owner": "",
+      "hours": "4",
+      "description": "Realizar los cobros una vez al mes. Repetir con lxs morosxs",
+      "super": "super_12",
+      "type": "sub",
+      "left": "1736px",
+      "top": "433px"
+    },
+    {
+      "id": "node_30",
+      "name": "Realizar pagos",
+      "owner": "Gemma",
+      "hours": "2",
+      "description": "Hacer transferencias a la gente que justifique gastos",
+      "super": "super_12",
+      "type": "sub",
+      "left": "1764px",
+      "top": "535px"
+    },
+    {
+      "id": "node_31",
+      "name": "Estar pendiente de la afiliación",
+      "owner": "",
+      "hours": "8",
+      "description": "Llamar a la gente con problemas de pagos o cuota reducida",
+      "super": "super_12",
+      "type": "sub",
+      "left": "1690px",
+      "top": "636px"
+    },
+    {
+      "id": "super_13",
+      "name": "Memoria histórica",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "1325px",
+      "top": "730px"
+    },
+    {
+      "id": "node_32",
+      "name": "Coordinar con otras organizaciones",
+      "owner": "",
+      "hours": "2",
+      "description": "Identifica organizaciones afines y les interpela en busca de sinergias",
+      "super": "super_13",
+      "type": "sub",
+      "left": "1650px",
+      "top": "734px"
+    },
+    {
+      "id": "node_33",
+      "name": "Formación memoria histórica",
+      "owner": "",
+      "hours": "2",
+      "description": "Identifica formaciones interesantes y se coordina con la secretaría de formación",
+      "super": "super_13",
+      "type": "sub",
+      "left": "1695px",
+      "top": "835px"
+    },
+    {
+      "id": "node_34",
+      "name": "Preparar actividades de puesta en valor",
+      "owner": "",
+      "hours": "2",
+      "description": "Identifica y se coordina con la secretaría de acción social para proponer actividades",
+      "super": "super_13",
+      "type": "sub",
+      "left": "1618px",
+      "top": "952px"
+    },
+    {
+      "id": "super_14",
+      "name": "Formación",
+      "owner": "Chis",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "758px",
+      "top": "740px"
+    },
+    {
+      "id": "node_35",
+      "name": "Preparar formaciones",
+      "owner": "Chis",
+      "hours": "6",
+      "description": "dentificar distintos tipos de formaciones. Coordinarse con Comunicación para generar materiales y con Acción Social para actividades conjuntas. Atender propuestas de Feminismos y Memoria Histórica.",
+      "super": "super_14",
+      "type": "sub",
+      "left": "939px",
+      "top": "956px"
+    },
+    {
+      "id": "super_15",
+      "name": "Feminismos",
+      "owner": "",
+      "hours": "undefined",
+      "description": "",
+      "super": "super_2",
+      "type": "super",
+      "left": "1064px",
+      "top": "736px"
+    },
+    {
+      "id": "node_36",
+      "name": "Repensar el sindicato",
+      "owner": "",
+      "hours": "2",
+      "description": "Identificar procedimientos, dinámicas o ideas machistas y proponer y supervisar soluciones.",
+      "super": "super_15",
+      "type": "sub",
+      "left": "1134px",
+      "top": "956px"
+    },
+    {
+      "id": "node_37",
+      "name": "Formación feminista",
+      "owner": "",
+      "hours": "2",
+      "description": "Identificar formaciones interesantes y coordinarse con la secretaría de formación",
+      "super": "super_15",
+      "type": "sub",
+      "left": "1353px",
+      "top": "954px"
+    },
+    {
+      "id": "node_38",
+      "name": "Estrategias de crecimiento",
+      "owner": "",
+      "hours": "3",
+      "description": "Identificar sectores propicios para la implantación. Desarrollar e implementar estrategias para la creación de nuevas secciones sindicales.",
+      "super": "super_1",
+      "type": "sub",
+      "left": "709px",
+      "top": "955px"
+    }
+  ],
+  "edges": [
+    {
+      "from": "node_1",
+      "to": "super_1"
+    },
+    {
+      "from": "node_2",
+      "to": "super_1"
+    },
+    {
+      "from": "super_1",
+      "to": "super_2"
+    },
+    {
+      "from": "node_3",
+      "to": "super_3"
+    },
+    {
+      "from": "node_4",
+      "to": "super_3"
+    },
+    {
+      "from": "super_3",
+      "to": "super_2"
+    },
+    {
+      "from": "super_4",
+      "to": "super_2"
+    },
+    {
+      "from": "node_5",
+      "to": "super_4"
+    },
+    {
+      "from": "node_7",
+      "to": "super_5"
+    },
+    {
+      "from": "super_5",
+      "to": "super_2"
+    },
+    {
+      "from": "node_8",
+      "to": "super_5"
+    },
+    {
+      "from": "super_6",
+      "to": "super_2"
+    },
+    {
+      "from": "node_9",
+      "to": "super_6"
+    },
+    {
+      "from": "node_10",
+      "to": "super_6"
+    },
+    {
+      "from": "node_12",
+      "to": "super_6"
+    },
+    {
+      "from": "node_13",
+      "to": "super_1"
+    },
+    {
+      "from": "node_14",
+      "to": "super_1"
+    },
+    {
+      "from": "node_15",
+      "to": "super_7"
+    },
+    {
+      "from": "node_16",
+      "to": "super_7"
+    },
+    {
+      "from": "node_17",
+      "to": "super_7"
+    },
+    {
+      "from": "node_18",
+      "to": "super_7"
+    },
+    {
+      "from": "node_19",
+      "to": "super_8"
+    },
+    {
+      "from": "super_9",
+      "to": "super_2"
+    },
+    {
+      "from": "node_20",
+      "to": "super_9"
+    },
+    {
+      "from": "node_21",
+      "to": "super_10"
+    },
+    {
+      "from": "super_10",
+      "to": "super_2"
+    },
+    {
+      "from": "super_11",
+      "to": "super_2"
+    },
+    {
+      "from": "node_22",
+      "to": "super_11"
+    },
+    {
+      "from": "node_23",
+      "to": "super_11"
+    },
+    {
+      "from": "node_24",
+      "to": "super_11"
+    },
+    {
+      "from": "node_25",
+      "to": "super_11"
+    },
+    {
+      "from": "node_26",
+      "to": "super_1"
+    },
+    {
+      "from": "node_27",
+      "to": "super_4"
+    },
+    {
+      "from": "node_28",
+      "to": "super_4"
+    },
+    {
+      "from": "super_12",
+      "to": "super_2"
+    },
+    {
+      "from": "node_29",
+      "to": "super_12"
+    },
+    {
+      "from": "node_30",
+      "to": "super_12"
+    },
+    {
+      "from": "node_31",
+      "to": "super_12"
+    },
+    {
+      "from": "super_13",
+      "to": "super_2"
+    },
+    {
+      "from": "node_32",
+      "to": "super_13"
+    },
+    {
+      "from": "node_33",
+      "to": "super_13"
+    },
+    {
+      "from": "node_34",
+      "to": "super_13"
+    },
+    {
+      "from": "super_14",
+      "to": "super_2"
+    },
+    {
+      "from": "node_35",
+      "to": "super_14"
+    },
+    {
+      "from": "super_15",
+      "to": "super_2"
+    },
+    {
+      "from": "node_36",
+      "to": "super_15"
+    },
+    {
+      "from": "node_37",
+      "to": "super_15"
+    },
+    {
+      "from": "node_38",
+      "to": "super_1"
+    }
+  ],
+  "people": [
+    "Gorka",
+    "Juan",
+    "Amalia",
+    "Lorena",
+    "Alex",
+    "Miguel",
+    "Gemma",
+    "Chis"
+  ]
+}
