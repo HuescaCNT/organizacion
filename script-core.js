@@ -15,7 +15,7 @@ function addPerson() {
   if (!nombre) return alert("Introduce un nombre");
 
   if (!Array.isArray(personas)) personas = [];
-  if (personas.includes(nombre)) return alert("Esa persona ya está añadida.");
+  if ((personas || []).includes(nombre)) return alert("Esa persona ya está añadida.");
 
   personas.push(nombre);
   actualizarSelects();
@@ -27,7 +27,7 @@ function addPerson() {
 function renderPersonList() {
   const list = document.getElementById("personList");
   list.innerHTML = "";
-  personas.forEach((p) => {
+  (personas || []).forEach((p) => {
     const li = document.createElement("li");
     li.textContent = p;
     list.appendChild(li);
@@ -37,8 +37,8 @@ function renderPersonList() {
 function actualizarSelects() {
   const selects = document.querySelectorAll("select");
   selects.forEach((sel) => {
-    if ((sel.id || "").includes("Owner")) {
-      sel.innerHTML = personas
+    if (((sel.id || "") + "").includes("Owner")) {
+      sel.innerHTML = (personas || [])
         .map((p) => `<option value="${p}">${p}</option>`)
         .join("");
     }
@@ -99,8 +99,8 @@ function createSupernode() {
 function renderNode(nodo) {
   const div = document.createElement("div");
   div.className = "node";
-  div.style.left = nodo.x + "px";
-  div.style.top = nodo.y + "px";
+  div.style.left = (nodo.x || 0) + "px";
+  div.style.top = (nodo.y || 0) + "px";
   div.textContent = nodo.nombre || "Nodo sin nombre";
   div.dataset.id = nodo.id;
   div.onclick = () => openPopup(nodo);
@@ -146,7 +146,6 @@ function importGraph(event) {
 function importGraphFromData(data) {
   console.log("🔄 Importando grafo...");
 
-  // Acepta nombres en inglés o español
   nodos = data.nodos || data.nodes || [];
   enlaces = data.enlaces || data.edges || [];
   personas = data.personas || data.people || [];
@@ -154,7 +153,6 @@ function importGraphFromData(data) {
   const canvas = document.getElementById("canvasContent");
   canvas.innerHTML = "";
 
-  // Crea nodos de manera segura
   nodos.forEach((n) => {
     const id = n.id || crypto.randomUUID();
     const nombre = n.nombre || n.name || n.label || `Nodo ${id}`;
@@ -169,39 +167,26 @@ function importGraphFromData(data) {
     div.dataset.id = id;
     div.textContent = nombre;
 
-    // Muestra información del nodo al hacer clic
     div.onclick = () => {
-      const info = {
-        id,
-        nombre,
-        owner,
-        horas,
-        descripcion,
-        super: n.super || "",
-      };
-      if (typeof openPopup === "function") {
-        openPopup(info);
-      } else {
-        console.log("ℹ️ Nodo:", info);
-      }
+      const info = { id, nombre, owner, horas, descripcion, super: n.super || "" };
+      if (typeof openPopup === "function") openPopup(info);
+      else console.log("ℹ️ Nodo:", info);
     };
 
     canvas.appendChild(div);
   });
 
-  // Dibuja enlaces visuales entre nodos
   drawEdges();
 
-  // Carga lista de personas
+  // Carga lista de personas de forma segura
   if (!Array.isArray(window.personas)) window.personas = [];
-  if (Array.isArray(personas)) {
-    personas.forEach((p) => {
-      if (!window.personas.includes(p)) window.personas.push(p);
-    });
-  }
-  renderPersonList();
+  (personas || []).forEach((p) => {
+    if (!(window.personas || []).includes(p)) window.personas.push(p);
+  });
 
+  renderPersonList();
   updateSummary();
+
   console.log(`✅ Grafo importado correctamente (${nodos.length} nodos, ${enlaces.length} enlaces)`);
 }
 
@@ -212,7 +197,7 @@ function importGraphFromData(data) {
 function drawEdges() {
   const canvas = document.getElementById("canvasContent");
 
-  enlaces.forEach((e) => {
+  (enlaces || []).forEach((e) => {
     const sourceId = e.origen || e.source;
     const targetId = e.destino || e.target;
     const source = nodos.find((n) => n.id === sourceId);
@@ -248,10 +233,9 @@ function updateSummary() {
   resumen.innerHTML = "";
   const horasPorPersona = {};
 
-  nodos.forEach((n) => {
+  (nodos || []).forEach((n) => {
     if (n.owner) {
-      horasPorPersona[n.owner] =
-        (horasPorPersona[n.owner] || 0) + (n.horas || 0);
+      horasPorPersona[n.owner] = (horasPorPersona[n.owner] || 0) + (n.horas || 0);
     }
   });
 
@@ -263,12 +247,7 @@ function updateSummary() {
 }
 
 /* ============================================================
-   FIN DE SCRIPT - LIMPIO Y FUNCIONAL
+   FIN DE SCRIPT
    ============================================================ */
 
 console.log("✅ script-core.js cargado correctamente");
-
-
-
-
-
