@@ -9,464 +9,267 @@ let enlaces = [];
 let personas = [];
 let selectedNode = null;
 let scale = 1;
-let offsetX =  element.style.opacity = hide ? "0" : "1";
-  element.style.transform = hide ? "scale(0.9)" : "scale(1)";
-  setTimeout(() => {
-    element.style.display = hide ? "none" : "block";
-  }, hide ? 300 : 0);
+let offsetX = 0;
+let offsetY = 0;
+let draggingNode = null;
+
+/* ============================================================
+   INICIALIZACIÓN AUTOMÁTICA
+   ============================================================ */
+
+window.addEventListener("DOMContentLoaded", async () => {
+  console.log("🚀 Cargando grafo principal...");
+  await loadMainGraph();
+  updateSummary();
+});
+
+/* ============================================================
+   CARGA PRINCIPAL DE GRAFO
+   ============================================================ */
+async function loadMainGraph() {
+  try {
+    const res = await fetch("graphs/huescageneral.json");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    importGraphFromData(data);
+    console.log("✅ Grafo cargado correctamente");
+  } catch (err) {
+    console.error("🚨 Error al cargar el grafo:", err);
+    alert("No se pudo cargar el grafo principal.");
+  }
 }
 
+/* ============================================================
+   IMPORTACIÓN DE DATOS DE GRAFO
+   ============================================================ */
+function importGraphFromData(data) {
+  console.log("📥 Importando grafo desde datos...");
+  nodos = data.nodos || data.nodes || [];
+  enlaces = data.enlaces || data.edges || [];
+  personas = data.personas || data.people || [];
+
+  const canvas = document.getElementById("canvasContent");
+  canvas.innerHTML = "";
+
+  // Renderizar nodos
+  nodos.forEach((n) => renderNode(n));
+
+  // Renderizar enlaces
+  drawEdges();
+  renderPersonList();
+}
+
+/* ============================================================
+   RENDERIZADO DE NODOS Y ENLACES
+   ============================================================ */
+function renderNode(nodo) {
+  const div = document.createElement("div");
+  div.className = "node";
+  div.dataset.id = nodo.id || crypto.randomUUID();
+  div.textContent = nodo.nombre || "Nodo";
+
+  div.style.left = (nodo.x || Math.random() * 800) + "px";
+  div.style.top = (nodo.y || Math.random() * 600) + "px";
+  div.style.backgroundColor = getColorByType(nodo.tipo);
+
+  // Drag and drop
+  div.addEventListener("mousedown", (e) => startDragNode(e, nodo, div));
+  div.addEventListener("mouseup", () => (draggingNode = null));
+
+  // Popup al hacer click
+  div.addEventListener("dblclick", () => openPopup(nodo));
+
+  document.getElementById("canvasContent").appendChild(div);
+}
+
+function drawEdges() {
+  const canvas = document.getElementById("canvasContent");
+  enlaces.forEach((e) => {
+    const src = nodos.find((n) => n.id === e.origen || n.id === e.source);
+    const dst = nodos.find((n) => n.id === e.destino || n.id === e.target);
+    if (!src || !dst) return;
+
+    const x1 = (src.x || 0) + 60;
+    const y1 = (src.y || 0) + 20;
+    const x2 = (dst.x || 0) + 60;
+    const y2 = (dst.y || 0) + 20;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    const line = document.createElement("div");
+    line.className = "edge";
+    line.style.width = len + "px";
+    line.style.left = x1 + "px";
+    line.style.top = y1 + "px";
+    line.style.transform = `rotate(${angle}deg)`;
+    canvas.appendChild(line);
+  });
+}
+
+function getColorByType(tipo) {
+  switch (tipo) {
+    case "supernodo": return "#ffeeba";
+    case "subnodo": return "#cce5ff";
+    case "tarea": return "#d4edda";
+    default: return "#f8d7da";
+  }
+}
+
+/* ============================================================
+   MOVER NODOS
+   ============================================================ */
+function startDragNode(e, nodo, div) {
+  draggingNode = { nodo, div, startX: e.clientX, startY: e.clientY };
+  document.addEventListener("mousemove", onDragNode);
+  document.addEventListener("mouseup", stopDragNode);
+}
+
+function onDragNode(e) {
+  if (!draggingNode) return;
+  const dx = e.clientX - draggingNode.startX;
+  const dy = e.clientY - draggingNode.startY;
+  const left = parseFloat(draggingNode.div.style.left) + dx;
+  const top = parseFloat(draggingNode.div.style.top) + dy;
+  draggingNode.div.style.left = left + "px";
+  draggingNode.div.style.top = top + "px";
+  draggingNode.nodo.x = left;
+  draggingNode.nodo.y = top;
+  draggingNode.startX = e.clientX;
+  draggingNode.startY = e.clientY;
+}
+
+function stopDragNode() {
+  document.removeEventListener("mousemove", onDragNode);
+  document.removeEventListener("mouseup", stopDragNode);
+  draggingNode = null;
+  redraw();
+}
+
+/* ============================================================
+   POPUP DE EDICIÓN
+   ============================================================ */
+function openPopup(nodo) {
+  selectedNode = nodo;
+  document.getElementById("popup").style.display = "block";
+  document.getElementById("editName").value = nodo.nombre || "";
+  document.getElementById("editOwner").value = nodo.owner || "";
+  document.getElementById("editHours").value = nodo.horas || 0;
+  document.getElementById("editDescription").value = nodo.descripcion || "";
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+function applyEdits() {
+  if (!selectedNode) return;
+  selectedNode.nombre = document.getElementById("editName").value;
+  selectedNode.owner = document.getElementById("editOwner").value;
+  selectedNode.horas = parseInt(document.getElementById("editHours").value);
+  selectedNode.descripcion = document.getElementById("editDescription").value;
+  redraw();
+  closePopup();
+}
+
+function deleteNode() {
+  if (!selectedNode) return;
+  nodos = nodos.filter((n) => n !== selectedNode);
+  enlaces = enlaces.filter(
+    (e) =>
+      e.origen !== selectedNode.id &&
+      e.destino !== selectedNode.id &&
+      e.source !== selectedNode.id &&
+      e.target !== selectedNode.id
+  );
+  redraw();
+  closePopup();
+}
+
+/* ============================================================
+   CREACIÓN Y EXPORTACIÓN
+   ============================================================ */
+function createNode() {
+  const name = document.getElementById("taskName").value.trim();
+  if (!name) return alert("Introduce un nombre de tarea");
+  const nodo = {
+    id: crypto.randomUUID(),
+    nombre: name,
+    owner: document.getElementById("taskOwner").value,
+    horas: parseInt(document.getElementById("taskHours").value) || 0,
+    descripcion: document.getElementById("taskDescription").value.trim(),
+    tipo: "subnodo",
+    x: Math.random() * 800,
+    y: Math.random() * 600,
+  };
+  nodos.push(nodo);
+  redraw();
+}
 
 function createSupernode() {
   const name = document.getElementById("superName").value.trim();
-  const owner = document.getElementById("superOwner").value;
-  const parentId = document.getElementById("superSelect").value;
-
-  if (!name) return;
-
-  const id = `super_${superCounter++}`;
-  const node = document.createElement("div");
-  node.className = "node";
-  node.dataset.id = id;
-  node.dataset.name = name;
-  node.dataset.owner = owner;
-  node.dataset.type = "super";
-  node.dataset.super = parentId;
-
-  updateSupernodeVisual(node, 0);
-  positionRandomly(node);
-  makeDraggable(node);
-  enablePopupEdit(node);
-  enableCollapseToggle(node);
-  document.getElementById("canvasContent").appendChild(node);
-
-  updateSuperDropdown();
-
-  if (parentId) {
-    createEdge(id, parentId);
-    updateSupernodeCompletionCascade(parentId);
-  }
-  updatePersonSummary()
+  if (!name) return alert("Introduce un nombre para el supernodo");
+  const nodo = {
+    id: crypto.randomUUID(),
+    nombre: name,
+    tipo: "supernodo",
+    x: Math.random() * 800,
+    y: Math.random() * 600,
+  };
+  nodos.push(nodo);
+  redraw();
 }
-
-function updateNodeVisual(node) {
-  const name = node.dataset.name;
-  const owner = node.dataset.owner;
-  const hours = node.dataset.hours;
-  const description = node.dataset.description || "";
-
-  const isVisible = node.dataset.descVisible === "true";
-
-  const toggleIcon = isVisible ? "➖" : "➕";
-  const descHTML = isVisible ? `<div class="description">${description}</div>` : "";
-
-  node.innerHTML = `
-    <strong>${name}</strong><br>
-    Responsable: ${owner || "(sin asignar)"}<br>
-    Horas: ${hours}
-    <span class="toggle-desc" style="float:right; cursor:pointer;">${toggleIcon}</span>
-    ${descHTML}
-  `;
-  node.style.backgroundColor = owner ? "#4CAF50" : "#F44336";
-  node.style.color = "black";
-
-  const toggle = node.querySelector(".toggle-desc");
-  if (toggle) {
-    toggle.onclick = () => {
-      node.dataset.descVisible = node.dataset.descVisible === "true" ? "false" : "true";
-      updateNodeVisual(node);
-    };
-  }
-}
-
-
-
-function updateSupernodeVisual(node, completion) {
-  const name = node.dataset.name;
-  const owner = node.dataset.owner;
-  const percent = Math.round(completion * 100);
-  const icon = collapsedSupernodes.has(node.dataset.id) ? "➕" : "➖";
-
-  let html = `<span class="collapse-icon" style="float:right; font-size:18px;">${icon}</span>
-    <strong>${name} (${percent}%)</strong><br>Responsable: ${owner || "(sin asignar)"}`;
-
-  if (collapsedSupernodes.has(node.dataset.id)) {
-    const subnodes = getAllDescendantSubnodes(node.dataset.id);
-    if (subnodes.length > 0) {
-      html += `<div style="margin-top:6px; text-align:left;">`;
-      subnodes.forEach(n => {
-        const hasOwner = n.dataset.owner && n.dataset.owner.trim() !== "";
-        const taskIcon = hasOwner ? "✅" : "⚠️";
-        html += `${taskIcon} ${n.dataset.name}<br>`;
-      });
-      html += `</div>`;
-    }
-  }
-
-  node.innerHTML = html;
-  node.style.backgroundColor = getGradientColor(completion);
-  node.style.color = "black";
-}
-
-
-
-function getGradientColor(value) {
-  value = Math.max(0, Math.min(1, value));
-  const r = value < 0.5 ? 244 + (255 - 244) * (value / 0.5) : 255 - (255 - 76) * ((value - 0.5) / 0.5);
-  const g = value < 0.5 ? 67 + (255 - 67) * (value / 0.5) : 255 - (255 - 175) * ((value - 0.5) / 0.5);
-  const b = value < 0.5 ? 54 : 0 + 80 * ((value - 0.5) / 0.5);
-  return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
-}
-
-function updateSupernodeCompletionCascade(superId) {
-  updateSupernodeCompletion(superId);
-  const parentId = document.querySelector(`.node[data-id='${superId}']`)?.dataset.super;
-  if (parentId) updateSupernodeCompletionCascade(parentId);
-}
-
-function updateSupernodeCompletion(superId) {
-  const subnodes = getAllDescendantSubnodes(superId);
-  const total = subnodes.reduce((sum, n) => sum + parseFloat(n.dataset.hours || 0), 0);
-  const withOwner = subnodes.reduce((sum, n) => n.dataset.owner ? sum + parseFloat(n.dataset.hours || 0) : sum, 0);
-  const completion = total > 0 ? withOwner / total : 0;
-
-  const supernode = document.querySelector(`.node[data-id='${superId}']`);
-  if (supernode) updateSupernodeVisual(supernode, completion);
-}
-
-function getAllDescendantSubnodes(superId) {
-  let result = [];
-  const children = [...document.querySelectorAll(".node")].filter(n => n.dataset.super === superId);
-  for (const child of children) {
-    if (child.dataset.type === "sub") result.push(child);
-    else if (child.dataset.type === "super") result = result.concat(getAllDescendantSubnodes(child.dataset.id));
-  }
-  return result;
-}
-function updatePersonDropdowns() {
-  const selects = [
-    document.getElementById("taskOwner"),
-    document.getElementById("superOwner"),
-    document.getElementById("editOwner")
-  ];
-  selects.forEach(select => {
-    if (!select) return;
-    select.innerHTML = '<option value="">(sin asignar)</option>';
-    people.forEach(p => {
-      const option = document.createElement("option");
-      option.value = p;
-      option.textContent = p;
-      select.appendChild(option);
-    });
-  });
-}
-
-function addPerson() {
-  const name = document.getElementById("newPersonName").value.trim();
-  if (!name || people.includes(name)) return;
-  people.push(name);
-  updatePersonDropdowns();
-  updatePersonList();
-  document.getElementById("newPersonName").value = "";
-}
-
-
-function updatePersonList() {
-  const list = document.getElementById("personList");
-  list.innerHTML = "";
-  people.forEach((p, i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <input value="${p}" onchange="editPerson(${i}, this.value)">
-      <button onclick="removePerson(${i})">Eliminar</button>
-    `;
-    list.appendChild(li);
-  });
-  updatePersonSummary();
-}
-
-function editPerson(index, newName) {
-  const oldName = people[index];
-  people[index] = newName;
-  document.querySelectorAll(".node").forEach(n => {
-    if (n.dataset.owner === oldName) {
-      n.dataset.owner = newName;
-      if (n.dataset.type === "sub") updateNodeVisual(n);
-      else updateSupernodeCompletionCascade(n.dataset.id);
-    }
-  });
-  updatePersonDropdowns();
-  updatePersonList();
-}
-
-function removePerson(index) {
-  const name = people[index];
-  people.splice(index, 1);
-  document.querySelectorAll(".node").forEach(n => {
-    if (n.dataset.owner === name) {
-      n.dataset.owner = "";
-      if (n.dataset.type === "sub") updateNodeVisual(n);
-      else updateSupernodeCompletionCascade(n.dataset.id);
-    }
-  });
-  updatePersonDropdowns();
-  updatePersonList();
-}
-
-function updatePersonSummary() {
-  const summary = document.getElementById("personSummary");
-  summary.innerHTML = "";
-
-  const subnodes = [...document.querySelectorAll(".node[data-type='sub']")];
-  const totalTasks = subnodes.length;
-  const assignedTasks = subnodes.filter(n => n.dataset.owner && n.dataset.owner.trim() !== "").length;
-
-  const totalHours = subnodes.map(n => parseFloat(n.dataset.hours || 0));
-  const assignedHours = subnodes
-    .filter(n => n.dataset.owner && n.dataset.owner.trim() !== "")
-    .map(n => parseFloat(n.dataset.hours || 0));
-
-  const totalHoursSum = totalHours.reduce((sum, h) => sum + h, 0);
-  const assignedHoursSum = assignedHours.reduce((sum, h) => sum + h, 0);
-  const assignedPercent = totalHoursSum > 0 ? (assignedHoursSum / totalHoursSum) : 0;
-  const assignedTaskPercent = totalTasks > 0 ? (assignedTasks / totalTasks) : 0;
-
-  const personHours = people.map(p => {
-    return subnodes
-      .filter(n => n.dataset.owner === p)
-      .reduce((sum, n) => sum + parseFloat(n.dataset.hours || 0), 0);
-  });
-
-  const giniByPerson = calculateGini(personHours);
-  const giniTotalHours = calculateGini(totalHours);
-  const giniAssignedHours = calculateGini(assignedHours);
-
-  // Barras visuales con valores
-  summary.appendChild(createProgressBar(giniByPerson, "Índice de Gini por persona (horas asignadas)"));
-  summary.appendChild(createProgressBar(giniTotalHours, "Índice de Gini de todas las tareas (horas)"));
-  summary.appendChild(createProgressBar(giniAssignedHours, "Índice de Gini de tareas asignadas (horas)"));
-  summary.appendChild(createProgressBar(assignedPercent, "Proporción de horas asignadas"));
-  summary.appendChild(createProgressBar(assignedTaskPercent, "Proporción de tareas asignadas"));
-
-  // Datos numéricos complementarios
-  const extraStats = [
-    `Horas asignadas: ${assignedHoursSum.toFixed(1)} / ${totalHoursSum.toFixed(1)} (${(assignedPercent * 100).toFixed(1)}%)`,
-    `Tareas totales: ${totalTasks}`,
-    `Tareas asignadas: ${assignedTasks}`
-  ];
-
-  extraStats.forEach(text => {
-    const li = document.createElement("li");
-    li.textContent = text;
-    summary.appendChild(li);
-  });
-
-  // Carga media y personas sobrecargadas
-  const totalAssignedPeople = personHours.filter(h => h > 0).length;
-  const averageHours = totalAssignedPeople > 0
-    ? personHours.reduce((sum, h) => sum + h, 0) / totalAssignedPeople
-    : 0;
-
-  const overloaded = people
-    .map((p, i) => ({ name: p, hours: personHours[i] }))
-    .filter(p => p.hours > 2 * averageHours);
-
-  const avgLi = document.createElement("li");
-  avgLi.innerHTML = `<strong>Media de horas por persona asignada:</strong> ${averageHours.toFixed(1)} h`;
-  summary.appendChild(avgLi);
-
-  if (overloaded.length > 0) {
-    const overTitle = document.createElement("li");
-    overTitle.innerHTML = `<strong>Personas con más del doble de carga:</strong>`;
-    summary.appendChild(overTitle);
-
-    overloaded.forEach(p => {
-      const li = document.createElement("li");
-      li.textContent = `• ${p.name}: ${p.hours.toFixed(1)} h`;
-      summary.appendChild(li);
-    });
-  }
-}
-
-
-function calculateGini(values) {
-  const sorted = values.slice().sort((a, b) => a - b);
-  const n = sorted.length;
-  if (n === 0) return 0;
-
-  const total = sorted.reduce((sum, val) => sum + val, 0);
-  if (total === 0) return 0;
-
-  let cumulative = 0;
-  for (let i = 0; i < n; i++) {
-    cumulative += (i + 1) * sorted[i];
-  }
-
-  return 1 - ((2 * cumulative) / (n * total) - (n + 1) / n);
-}
-
-function createProgressBar(value, label) {
-  const container = document.createElement("li");
-
-  const percentText = `${(value * 100).toFixed(1)}%`;
-  container.innerHTML = `<strong>${label}</strong> <span style="float:right;">${percentText}</span>`;
-
-  const bar = document.createElement("div");
-  bar.style.height = "12px";
-  bar.style.borderRadius = "6px";
-  bar.style.marginTop = "4px";
-  bar.style.background = "#ddd";
-  bar.style.overflow = "hidden";
-
-  const fill = document.createElement("div");
-  fill.style.height = "100%";
-  fill.style.width = percentText;
-  fill.style.backgroundColor = getColorGradient(value);
-  fill.style.transition = "width 0.3s ease";
-
-  bar.appendChild(fill);
-  container.appendChild(bar);
-  return container;
-}
-
-
-function getColorGradient(value) {
-  value = Math.max(0, Math.min(1, value));
-  const r = 255 - Math.round(255 * value);
-  const g = Math.round(200 * value);
-  return `rgb(${r},${g},60)`;
-}
-
 
 function exportGraph() {
-  const nodes = [...document.querySelectorAll(".node")].map(n => ({
-    id: n.dataset.id,
-    name: n.dataset.name,
-    owner: n.dataset.owner,
-    hours: n.dataset.hours,
-	description: n.dataset.description,
-    super: n.dataset.super,
-    type: n.dataset.type,
-    left: n.style.left,
-    top: n.style.top
-  }));
-
-  const edges = [...document.querySelectorAll(".edge")].map(e => ({
-    from: e.dataset.from,
-    to: e.dataset.to
-  }));
-
-  const data = { nodes, edges, people };
-
+  const data = { nodos, enlaces, personas };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
+  const date = new Date().toISOString().split("T")[0];
   a.href = url;
-  a.download = "grafo.json";
+  a.download = `huescageneral_${date}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  console.log("💾 Grafo exportado con éxito");
 }
 
-function importGraph(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const data = JSON.parse(e.target.result);
-    loadGraph(data);
-  };
-  reader.readAsText(file);
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+function redraw() {
+  const canvas = document.getElementById("canvasContent");
+  canvas.innerHTML = "";
+  nodos.forEach((n) => renderNode(n));
+  drawEdges();
+  updateSummary();
 }
 
-function loadGraph(data) {
-  document.getElementById("canvasContent").innerHTML = "";
-  nodeCounter = 1;
-  superCounter = 1;
-
-  people = data.people || [];
-  updatePersonDropdowns();
-  updatePersonList();
-
-  data.nodes.forEach(n => {
-    const node = document.createElement("div");
-    node.className = "node";
-    node.dataset.id = n.id;
-    node.dataset.name = n.name;
-    node.dataset.owner = n.owner;
-	node.dataset.description = n.description || "";
-    node.dataset.hours = n.hours;
-    node.dataset.super = n.super;
-    node.dataset.type = n.type;
-    node.style.left = n.left;
-    node.style.top = n.top;
-
-    if (n.type === "sub") {
-      updateNodeVisual(node);
-    } else {
-      updateSupernodeVisual(node, 0);
-      enableCollapseToggle(node);
-    }
-
-    makeDraggable(node);
-    enablePopupEdit(node);
-    document.getElementById("canvasContent").appendChild(node);
-
-    const num = parseInt(n.id.split("_")[1]);
-    if (n.type === "sub") nodeCounter = Math.max(nodeCounter, num + 1);
-    else superCounter = Math.max(superCounter, num + 1);
+function renderPersonList() {
+  const ul = document.getElementById("personList");
+  if (!ul) return;
+  ul.innerHTML = "";
+  personas.forEach((p) => {
+    const li = document.createElement("li");
+    li.textContent = p;
+    ul.appendChild(li);
   });
+}
 
-  data.edges.forEach(e => {
-    createEdge(e.from, e.to);
+function updateSummary() {
+  const resumen = document.getElementById("personSummary");
+  if (!resumen) return;
+  resumen.innerHTML = "";
+  const horasPorPersona = {};
+  nodos.forEach((n) => {
+    if (n.owner) horasPorPersona[n.owner] = (horasPorPersona[n.owner] || 0) + (n.horas || 0);
   });
-
-  const superIds = data.nodes.filter(n => n.type === "super").map(n => n.id);
-  superIds.forEach(id => updateSupernodeCompletionCascade(id));
-
-  updateSuperDropdown();
-  updatePersonSummary();
+  for (const [persona, horas] of Object.entries(horasPorPersona)) {
+    const li = document.createElement("li");
+    li.textContent = `${persona}: ${horas} h`;
+    resumen.appendChild(li);
+  }
 }
 
-let scale = 1;
-let panX = 0;
-let panY = 0;
-let isPanning = false;
-let startX = 0;
-let startY = 0;
-
-const canvasWrapper = document.getElementById("canvasWrapper");
-const canvasContent = document.getElementById('canvasContent');
-canvasContent.appendChild(nuevoNodo);
-
-
-canvasWrapper.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const delta = e.deltaY > 0 ? -0.1 : 0.1;
-  scale = Math.max(0.2, Math.min(2, scale + delta));
-  updateTransform();
-});
-
-canvasWrapper.addEventListener("mousedown", (e) => {
-  if (e.button !== 1 && !e.ctrlKey) return; // botón central o Ctrl+clic
-  isPanning = true;
-  startX = e.clientX - panX;
-  startY = e.clientY - panY;
-});
-
-document.addEventListener("mousemove", (e) => {
-  if (!isPanning) return;
-  panX = e.clientX - startX;
-  panY = e.clientY - startY;
-  updateTransform();
-});
-
-document.addEventListener("mouseup", () => {
-  isPanning = false;
-});
-
-function updateTransform() {
-  canvasContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-}
-
+console.log("✅ script-core.js cargado correctamente");
