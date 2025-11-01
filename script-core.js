@@ -58,11 +58,7 @@ function importGraphFromData(data) {
   enlaces = data.enlaces || data.edges || [];
   personas = data.personas || data.people || [];
 
-  const canvasWrapper = document.getElementById("canvasWrapper");
   const canvasContent = document.getElementById("canvasContent");
-
-  // ✅ Línea eliminada: canvasContent.appendChild(nuevoNodo);
-
   canvasContent.innerHTML = "";
 
   // Renderiza nodos
@@ -86,26 +82,43 @@ function renderNode(nodo) {
   const div = document.createElement("div");
   div.className = "node";
   div.dataset.id = nodo.id;
-  div.textContent = nodo.nombre;
+
+  // 🔤 Acepta propiedades en español o inglés
+  const nombre = nodo.nombre || nodo.name || nodo.label || "Nodo sin nombre";
+  const tipo = nodo.tipo || nodo.type || "subnodo";
+  const owner = nodo.owner || nodo.propietario || "";
+  const horas = nodo.horas || nodo.hours || 0;
+  const descripcion = nodo.descripcion || nodo.description || "";
+
+  div.textContent = nombre;
 
   // Posición inicial
   div.style.left = (nodo.x || Math.random() * 800) + "px";
   div.style.top = (nodo.y || Math.random() * 600) + "px";
 
-  // Color
-  if (nodo.tipo === "supernodo") {
-    div.style.background = "#007bff";
+  // Color según tipo
+  if (tipo === "supernodo") {
+    div.style.background = "#007bff"; // Azul
+  } else if (tipo === "tarea") {
+    div.style.background = "#17a2b8"; // Cian
   } else {
-    div.style.background = "#28a745";
+    div.style.background = "#28a745"; // Verde
   }
 
-  // Evento de colapsar / expandir
+  // Doble clic: colapsar / expandir
   div.addEventListener("dblclick", () => {
     if (typeof toggleCollapse === "function") toggleCollapse(nodo.id);
   });
 
-  // Popup de edición
-  div.addEventListener("click", () => openPopup(nodo));
+  // Click: popup de edición
+  div.addEventListener("click", () => {
+    const info = { id: nodo.id, nombre, tipo, owner, horas, descripcion };
+    if (typeof openPopup === "function") {
+      openPopup(info);
+    } else {
+      console.log("ℹ️ Nodo:", info);
+    }
+  });
 
   document.getElementById("canvasContent").appendChild(div);
 }
@@ -159,9 +172,10 @@ function updateSummary() {
   const horasPorPersona = {};
 
   nodos.forEach((n) => {
-    if (n.owner) {
-      horasPorPersona[n.owner] =
-        (horasPorPersona[n.owner] || 0) + (n.horas || 0);
+    const owner = n.owner || n.propietario;
+    const horas = n.horas || n.hours || 0;
+    if (owner) {
+      horasPorPersona[owner] = (horasPorPersona[owner] || 0) + horas;
     }
   });
 
@@ -171,7 +185,7 @@ function updateSummary() {
     resumen.appendChild(li);
   }
 
-  // Cálculo de índice de Gini
+  // Índice Gini
   const gini = calcularGini(Object.values(horasPorPersona));
   if (!isNaN(gini)) {
     const li = document.createElement("li");
@@ -180,6 +194,9 @@ function updateSummary() {
   }
 }
 
+/* ============================================================
+   CÁLCULO DE GINI
+   ============================================================ */
 function calcularGini(valores) {
   if (!valores.length) return 0;
   const sorted = valores.slice().sort((a, b) => a - b);
