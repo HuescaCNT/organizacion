@@ -1,108 +1,15 @@
-let nodeCounter = 1;
-let superCounter = 1;
+/* ------------------------------------------------------------
+   SCRIPT CORE CNT - versión completa para GitHub Pages
+   Carga automática de graphs/huescageneral.json
+   Edición, movimiento, enlaces, guardado automático
+------------------------------------------------------------ */
+
+let nodos = [];
+let enlaces = [];
+let personas = [];
 let selectedNode = null;
-let people = [];
-
-function createNode() {
-  const name = document.getElementById("taskName").value.trim();
-  const owner = document.getElementById("taskOwner").value;
-  const hours = parseFloat(document.getElementById("taskHours").value);
-  const superId = document.getElementById("superSelect").value;
-  const description = document.getElementById("taskDescription").value.trim();
-
-  if (!name || isNaN(hours) || hours <= 0) return;
-
-  const id = `node_${nodeCounter++}`;
-  const node = document.createElement("div");
-  node.className = "node";
-  node.dataset.id = id;
-  node.dataset.name = name;
-  node.dataset.owner = owner;
-  node.dataset.hours = hours;
-  node.dataset.super = superId;
-  node.dataset.type = "sub";
-  node.dataset.description = description;
-
-
-  updateNodeVisual(node);
-  positionRandomly(node);
-  makeDraggable(node);
-  enablePopupEdit(node);
-  document.getElementById("canvasContent").appendChild(node);
-
-  if (superId) {
-    createEdge(id, superId);
-    updateSupernodeCompletionCascade(superId);
-  }
-  updatePersonSummary()
-}
-
-function positionRandomly(node) {
-  const canvasContent = document.getElementById('canvasContent');
-  const canvasWidth = canvasContent.offsetWidth;
-  const canvasHeight = canvasContent.offsetHeight;
-
-  const nodeWidth = 120; // puedes ajustar este valor si tus nodos son más grandes
-  const nodeHeight = 60;
-
-  const x = Math.random() * (canvasWidth - nodeWidth);
-  const y = Math.random() * (canvasHeight - nodeHeight);
-
-  node.style.left = `${x}px`;
-  node.style.top = `${y}px`;
-}
-
-function makeDraggable(element) {
-  let offsetX = 0, offsetY = 0, isDragging = false;
-
-  element.addEventListener("mousedown", (e) => {
-    if (e.button === 2) return; // Ignora clic derecho
-    isDragging = true;
-    offsetX = e.clientX - element.offsetLeft;
-    offsetY = e.clientY - element.offsetTop;
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (isDragging) {
-      element.style.left = (e.clientX - offsetX) + "px";
-      element.style.top = (e.clientY - offsetY) + "px";
-      updateConnectedEdges(element);
-    }
-  });
-
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
-}
-
-function updateConnectedEdges(node) {
-  const nodeId = node.dataset.id;
-  document.querySelectorAll(`.edge[data-from='${nodeId}'], .edge[data-to='${nodeId}']`).forEach(line => {
-    const from = document.querySelector(`.node[data-id='${line.dataset.from}']`);
-    const to = document.querySelector(`.node[data-id='${line.dataset.to}']`);
-    if (from && to) updateEdgePosition(line, from, to);
-  });
-}
-
-function updateEdgePosition(line, from, to) {
-  const x1 = from.offsetLeft + from.offsetWidth / 2;
-  const y1 = from.offsetTop + from.offsetHeight / 2;
-  const x2 = to.offsetLeft + to.offsetWidth / 2;
-  const y2 = to.offsetTop + to.offsetHeight / 2;
-
-  const length = Math.hypot(x2 - x1, y2 - y1);
-  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-  line.style.width = length + "px";
-  line.style.transform = `rotate(${angle}deg)`;
-  line.style.transformOrigin = "0 0";
-  line.style.left = x1 + "px";
-  line.style.top = y1 + "px";
-}
-
-function animateVisibility(element, hide) {
-  element.style.transition = "opacity 0.3s ease, transform 0.3s ease";
-  element.style.opacity = hide ? "0" : "1";
+let scale = 1;
+let offsetX =  element.style.opacity = hide ? "0" : "1";
   element.style.transform = hide ? "scale(0.9)" : "scale(1)";
   setTimeout(() => {
     element.style.display = hide ? "none" : "block";
@@ -562,3 +469,4 @@ document.addEventListener("mouseup", () => {
 function updateTransform() {
   canvasContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
 }
+
