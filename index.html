@@ -1,34 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Distribución Militancia CNT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ======= ESTILOS GENERALES ======= */
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
       margin: 0;
       height: 100vh;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
       background: #f4f6f8;
       color: #333;
-    }
-
-    h2 {
-      font-size: 1rem;
-      color: #004080;
-      margin: 16px 0 8px;
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 4px;
+      overflow: hidden;
     }
 
     /* ======= BARRA SUPERIOR ======= */
     header {
       height: 60px;
-      background: #ffffff;
+      background: #fff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
       align-items: center;
@@ -36,33 +27,29 @@
       padding: 0 20px;
       z-index: 100;
     }
-
-    header .logo {
+    .logo {
       height: 40px;
     }
-
-    header .controls {
+    .controls {
       display: flex;
       gap: 10px;
     }
-
     header button {
       border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
       background: #007bff;
       color: #fff;
-      transition: background 0.2s, transform 0.2s;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s ease, transform 0.2s ease;
     }
-
     header button:hover {
       background: #0056b3;
       transform: scale(1.05);
     }
 
-    /* ======= ESTRUCTURA PRINCIPAL ======= */
+    /* ======= CONTENEDOR PRINCIPAL ======= */
     main {
       display: flex;
       flex: 1;
@@ -72,26 +59,49 @@
 
     #leftPanel, #rightPanel {
       width: 260px;
-      background: #ffffff;
-      border-radius: 0;
+      background: #fff;
       padding: 20px;
-      box-shadow: 2px 0 6px rgba(0,0,0,0.05);
       overflow-y: auto;
       transition: all 0.3s ease;
-      z-index: 10;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.05);
     }
-
     #leftPanel { border-right: 1px solid #ddd; }
     #rightPanel { border-left: 1px solid #ddd; }
-
     body.hide-left #leftPanel { display: none; }
     body.hide-right #rightPanel { display: none; }
 
-    /* ======= CANVAS CENTRAL ======= */
+    h2 {
+      font-size: 1rem;
+      color: #004080;
+      margin-top: 20px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 6px 8px;
+      margin: 4px 0;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #leftPanel button {
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    #leftPanel button:hover { background: #218838; }
+
+    /* ======= CANVAS ======= */
     #canvas {
       flex: 1;
       position: relative;
-      overflow: hidden;
+      overflow: auto;
       background: #f9fafb;
       cursor: grab;
     }
@@ -103,30 +113,9 @@
       height: 3000px;
       transform-origin: 0 0;
       background-image:
-        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+        linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
       background-size: 40px 40px;
-    }
-
-    /* ======= NODOS ======= */
-    .node {
-      position: absolute;
-      padding: 10px;
-      border-radius: 8px;
-      color: #fff;
-      cursor: move;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      font-size: 14px;
-      user-select: none;
-    }
-
-    /* ======= EDGES ======= */
-    .edge {
-      position: absolute;
-      height: 2px;
-      background-color: #555;
-      transform-origin: 0 0;
     }
 
     /* ======= POPUP ======= */
@@ -143,26 +132,7 @@
       width: 260px;
     }
 
-    #popup input, #popup select {
-      width: 100%;
-      padding: 6px;
-      margin: 4px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    #popup button {
-      margin-top: 8px;
-      padding: 6px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      background: #007bff;
-      color: white;
-    }
-    #popup button:hover { background: #0056b3; }
-
-    /* ======= BOTONES DE PANEL ======= */
+    /* ======= BOTONES PANEL ======= */
     .toggle-panel {
       position: absolute;
       top: 70px;
@@ -177,28 +147,40 @@
       z-index: 300;
       transition: transform 0.2s;
     }
-
     .toggle-panel:hover { transform: scale(1.1); }
     #toggleLeft { left: 10px; }
     #toggleRight { right: 10px; }
 
-    /* ======= SCROLL ======= */
-    ::-webkit-scrollbar {
-      width: 6px;
+    ul { list-style: none; padding-left: 0; }
+
+    /* ======= NODOS ======= */
+    .node {
+      position: absolute;
+      padding: 10px;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 500;
+      text-align: center;
+      cursor: move;
+      user-select: none;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
-    ::-webkit-scrollbar-thumb {
-      background-color: rgba(0,0,0,0.2);
-      border-radius: 3px;
+
+    .edge {
+      position: absolute;
+      height: 2px;
+      background: #555;
+      transform-origin: 0 0;
+      z-index: 5;
     }
+
   </style>
 </head>
-
 <body>
-  <!-- Barra superior -->
+
+  <!-- BARRA SUPERIOR -->
   <header>
-    <div class="left">
-      <img src="LOGOTIPO.PNG" alt="CNT Huesca" class="logo">
-    </div>
+    <img src="LOGOTIPO.PNG" alt="CNT Huesca" class="logo">
     <div class="controls">
       <button onclick="loadMainGraph()">🔁 Actualizar</button>
       <button onclick="exportGraph()">💾 Guardar</button>
@@ -207,9 +189,8 @@
     </div>
   </header>
 
-  <!-- Paneles + Canvas -->
   <main>
-    <!-- Panel izquierdo -->
+    <!-- PANEL IZQUIERDO -->
     <div id="leftPanel">
       <h2>Crear tarea (subnodo)</h2>
       <input type="text" id="taskName" placeholder="Nombre de la tarea">
@@ -226,12 +207,12 @@
       <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
     </div>
 
-    <!-- Canvas central -->
+    <!-- CANVAS CENTRAL -->
     <div id="canvas">
       <div id="canvasContent"></div>
     </div>
 
-    <!-- Panel derecho -->
+    <!-- PANEL DERECHO -->
     <div id="rightPanel">
       <h2>Personas responsables</h2>
       <input type="text" id="newPersonName" placeholder="Nombre de la persona">
@@ -242,7 +223,7 @@
       <ul id="personSummary"></ul>
     </div>
 
-    <!-- Popup de edición -->
+    <!-- POPUP EDICIÓN -->
     <div id="popup">
       <label>Nombre:</label>
       <input type="text" id="editName">
@@ -257,36 +238,25 @@
       <button onclick="closePopup()">Cerrar</button>
     </div>
 
-    <!-- Botones para ocultar paneles -->
+    <!-- BOTONES DE PANEL -->
     <button id="toggleLeft" class="toggle-panel">⮜</button>
     <button id="toggleRight" class="toggle-panel">⮞</button>
   </main>
 
-  <!-- Scripts -->
+  <!-- SCRIPTS -->
   <script src="script-core.js"></script>
   <script src="script-edit.js"></script>
   <script src="script-collapse.js"></script>
 
   <script>
-    /* ====== BOTONES DE PANEL Y ZOOM ====== */
+    // Ocultar paneles
     document.getElementById("toggleLeft").onclick = () => {
       document.body.classList.toggle("hide-left");
     };
     document.getElementById("toggleRight").onclick = () => {
       document.body.classList.toggle("hide-right");
     };
-
-    const canvasContent = document.getElementById("canvasContent");
-    let zoomLevel = 1;
-
-    document.getElementById("zoomInBtn").onclick = () => {
-      zoomLevel = Math.min(2.5, zoomLevel * 1.1);
-      canvasContent.style.transform = `scale(${zoomLevel})`;
-    };
-    document.getElementById("zoomOutBtn").onclick = () => {
-      zoomLevel = Math.max(0.4, zoomLevel * 0.9);
-      canvasContent.style.transform = `scale(${zoomLevel})`;
-    };
   </script>
+
 </body>
 </html>
