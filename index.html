@@ -3,188 +3,290 @@
 <head>
   <meta charset="UTF-8" />
   <title>Distribución Militancia CNT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    /* ======= ESTILOS GENERALES ======= */
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       margin: 0;
-      display: flex;
       height: 100vh;
       overflow: hidden;
-      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    h2 {
+      font-size: 1rem;
+      color: #004080;
+      margin: 16px 0 8px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+
+    /* ======= BARRA SUPERIOR ======= */
+    header {
+      height: 60px;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+    }
+
+    header .logo {
+      height: 40px;
+    }
+
+    header .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    header button {
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    header button:hover {
+      background: #0056b3;
+      transform: scale(1.05);
+    }
+
+    /* ======= ESTRUCTURA PRINCIPAL ======= */
+    main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
     }
 
     #leftPanel, #rightPanel {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      padding: 16px;
+      width: 260px;
+      background: #ffffff;
+      border-radius: 0;
+      padding: 20px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.05);
       overflow-y: auto;
+      transition: all 0.3s ease;
+      z-index: 10;
     }
 
-    #leftPanel {
-      width: 280px;
-      border-right: 1px solid #ddd;
-    }
+    #leftPanel { border-right: 1px solid #ddd; }
+    #rightPanel { border-left: 1px solid #ddd; }
 
-    #rightPanel {
-      width: 240px;
-      border-left: 1px solid #ddd;
-    }
+    body.hide-left #leftPanel { display: none; }
+    body.hide-right #rightPanel { display: none; }
 
+    /* ======= CANVAS CENTRAL ======= */
     #canvas {
       flex: 1;
       position: relative;
       overflow: hidden;
-      background-color: #f9f9f9;
+      background: #f9fafb;
       cursor: grab;
     }
-
     #canvas:active { cursor: grabbing; }
 
     #canvasContent {
       position: relative;
-      width: 2000px;
-      height: 2000px;
+      width: 3000px;
+      height: 3000px;
       transform-origin: 0 0;
-      transition: transform 0.1s ease;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
 
+    /* ======= NODOS ======= */
     .node {
       position: absolute;
       padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #333;
-      min-width: 100px;
-      text-align: center;
-      color: #222;
-      font-weight: 500;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
-      user-select: none;
+      border-radius: 8px;
+      color: #fff;
       cursor: move;
-      transition: background 0.2s ease;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      font-size: 14px;
+      user-select: none;
     }
 
+    /* ======= EDGES ======= */
     .edge {
       position: absolute;
       height: 2px;
       background-color: #555;
       transform-origin: 0 0;
-      z-index: 10;
     }
 
+    /* ======= POPUP ======= */
     #popup {
       position: absolute;
+      top: 80px;
+      right: 20px;
       background: #fff;
-      border: 1px solid #333;
-      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 15px;
       display: none;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    input, select, button {
-      margin-bottom: 6px;
-      padding: 6px 8px;
-      font-size: 14px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      font-weight: 500;
-      transition: background 0.2s ease;
-    }
-
-    button:hover { background-color: #0056b3; }
-
-    h2 {
-      font-size: 16px;
-      margin: 16px 0 8px;
-      color: #333;
-    }
-
-    #zoomControls {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      padding: 6px 10px;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       z-index: 200;
+      width: 260px;
     }
 
-    #zoomControls button {
-      margin: 0 5px;
-      font-size: 16px;
-      padding: 4px 8px;
-      background: #007bff;
-      color: #fff;
+    #popup input, #popup select {
+      width: 100%;
+      padding: 6px;
+      margin: 4px 0;
+      border: 1px solid #ccc;
       border-radius: 4px;
+    }
+
+    #popup button {
+      margin-top: 8px;
+      padding: 6px 10px;
       border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+    }
+    #popup button:hover { background: #0056b3; }
+
+    /* ======= BOTONES DE PANEL ======= */
+    .toggle-panel {
+      position: absolute;
+      top: 70px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 50%;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      z-index: 300;
+      transition: transform 0.2s;
+    }
+
+    .toggle-panel:hover { transform: scale(1.1); }
+    #toggleLeft { left: 10px; }
+    #toggleRight { right: 10px; }
+
+    /* ======= SCROLL ======= */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.2);
+      border-radius: 3px;
     }
   </style>
 </head>
 
 <body>
-  <!-- Panel izquierdo -->
-  <div id="leftPanel">
-    <h2>Crear tarea</h2>
-    <input type="text" id="taskName" placeholder="Nombre de la tarea">
-    <input type="text" id="taskOwner" placeholder="Responsable">
-    <input type="number" id="taskHours" placeholder="Horas">
-    <input type="text" id="taskDescription" placeholder="Descripción">
-    <button onclick="createNode()">➕ Crear tarea</button>
+  <!-- Barra superior -->
+  <header>
+    <div class="left">
+      <img src="LOGOTIPO.PNG" alt="CNT Huesca" class="logo">
+    </div>
+    <div class="controls">
+      <button onclick="loadMainGraph()">🔁 Actualizar</button>
+      <button onclick="exportGraph()">💾 Guardar</button>
+      <button id="zoomInBtn">＋</button>
+      <button id="zoomOutBtn">−</button>
+    </div>
+  </header>
 
-    <h2>Crear supernodo</h2>
-    <input type="text" id="superName" placeholder="Nombre del supernodo">
-    <button onclick="createSupernode()">➕ Crear supernodo</button>
+  <!-- Paneles + Canvas -->
+  <main>
+    <!-- Panel izquierdo -->
+    <div id="leftPanel">
+      <h2>Crear tarea (subnodo)</h2>
+      <input type="text" id="taskName" placeholder="Nombre de la tarea">
+      <select id="taskOwner"></select>
+      <input type="number" id="taskHours" placeholder="Horas">
+      <input type="text" id="taskDescription" placeholder="Descripción">
+      <button onclick="createNode()">Crear tarea</button>
 
-    <h2>Guardar grafo</h2>
-    <button onclick="exportGraph()">💾 Guardar grafo</button>
-  </div>
+      <h2>Crear supernodo</h2>
+      <input type="text" id="superName" placeholder="Nombre del supernodo">
+      <button onclick="createSupernode()">Crear supernodo</button>
 
-  <!-- Canvas central -->
-  <div id="canvas">
-    <div id="canvasContent"></div>
-  </div>
+      <h2>Importar grafo</h2>
+      <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
+    </div>
 
-  <!-- Panel derecho -->
-  <div id="rightPanel">
-    <h2>Personas responsables</h2>
-    <ul id="personList"></ul>
+    <!-- Canvas central -->
+    <div id="canvas">
+      <div id="canvasContent"></div>
+    </div>
 
-    <h2>Resumen de carga</h2>
-    <ul id="personSummary"></ul>
-  </div>
+    <!-- Panel derecho -->
+    <div id="rightPanel">
+      <h2>Personas responsables</h2>
+      <input type="text" id="newPersonName" placeholder="Nombre de la persona">
+      <button onclick="addPerson()">Añadir persona</button>
+      <ul id="personList"></ul>
 
-  <!-- Popup -->
-  <div id="popup">
-    <h3>Editar nodo</h3>
-    <label>Nombre:</label>
-    <input type="text" id="editName"><br>
-    <label>Responsable:</label>
-    <input type="text" id="editOwner"><br>
-    <label>Horas:</label>
-    <input type="number" id="editHours"><br>
-    <label>Descripción:</label>
-    <input type="text" id="editDescription"><br>
-    <button onclick="applyEdits()">Aplicar cambios</button>
-    <button onclick="deleteNode()">Eliminar nodo</button>
-    <button onclick="closePopup()">Cerrar</button>
-  </div>
+      <h2>Resumen de carga</h2>
+      <ul id="personSummary"></ul>
+    </div>
 
-  <!-- Zoom controls -->
-  <div id="zoomControls">
-    <button id="zoomOutBtn" onclick="scale*=0.9;document.getElementById('canvasContent').style.transform=`scale(${scale}) translate(${offsetX}px,${offsetY}px)`;">−</button>
-    <button id="zoomInBtn" onclick="scale*=1.1;document.getElementById('canvasContent').style.transform=`scale(${scale}) translate(${offsetX}px,${offsetY}px)`;">+</button>
-  </div>
+    <!-- Popup de edición -->
+    <div id="popup">
+      <label>Nombre:</label>
+      <input type="text" id="editName">
+      <label>Responsable:</label>
+      <select id="editOwner"></select>
+      <label>Horas:</label>
+      <input type="number" id="editHours">
+      <label>Descripción:</label>
+      <input type="text" id="editDescription">
+      <button onclick="applyEdits()">Aplicar cambios</button>
+      <button onclick="deleteNode()">Eliminar</button>
+      <button onclick="closePopup()">Cerrar</button>
+    </div>
+
+    <!-- Botones para ocultar paneles -->
+    <button id="toggleLeft" class="toggle-panel">⮜</button>
+    <button id="toggleRight" class="toggle-panel">⮞</button>
+  </main>
 
   <!-- Scripts -->
   <script src="script-core.js"></script>
+  <script src="script-edit.js"></script>
+  <script src="script-collapse.js"></script>
+
+  <script>
+    /* ====== BOTONES DE PANEL Y ZOOM ====== */
+    document.getElementById("toggleLeft").onclick = () => {
+      document.body.classList.toggle("hide-left");
+    };
+    document.getElementById("toggleRight").onclick = () => {
+      document.body.classList.toggle("hide-right");
+    };
+
+    const canvasContent = document.getElementById("canvasContent");
+    let zoomLevel = 1;
+
+    document.getElementById("zoomInBtn").onclick = () => {
+      zoomLevel = Math.min(2.5, zoomLevel * 1.1);
+      canvasContent.style.transform = `scale(${zoomLevel})`;
+    };
+    document.getElementById("zoomOutBtn").onclick = () => {
+      zoomLevel = Math.max(0.4, zoomLevel * 0.9);
+      canvasContent.style.transform = `scale(${zoomLevel})`;
+    };
+  </script>
 </body>
 </html>
