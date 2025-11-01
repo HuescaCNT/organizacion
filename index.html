@@ -13,40 +13,32 @@
       background-color: #f0f2f5;
     }
 
+    #leftPanel, #rightPanel {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
     #leftPanel {
       width: 280px;
-      padding: 20px;
-      background-color: #ffffff;
       border-right: 1px solid #ddd;
-      overflow-y: auto;
-      resize: horizontal;
-      min-width: 180px;
-      max-width: 400px;
-      z-index: 10;
+    }
+
+    #rightPanel {
+      width: 240px;
+      border-left: 1px solid #ddd;
     }
 
     #canvas {
       flex: 1;
       position: relative;
+      overflow: hidden;
       background-color: #f9f9f9;
-      border: none;
-      overflow: auto;
       cursor: grab;
-      z-index: 5;
     }
 
     #canvas:active { cursor: grabbing; }
-
-    #canvas::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
 
     #canvasContent {
       position: relative;
@@ -54,60 +46,29 @@
       height: 2000px;
       transform-origin: 0 0;
       transition: transform 0.1s ease;
-      background: transparent;
     }
-
-    #rightPanel {
-      width: 240px;
-      padding: 20px;
-      background-color: #ffffff;
-      border-left: 1px solid #ddd;
-      overflow-y: auto;
-      resize: horizontal;
-      min-width: 180px;
-      max-width: 400px;
-      z-index: 10;
-    }
-
-    h2 { font-size: 16px; margin: 20px 0 10px; color: #333; }
-
-    .form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-
-    input, select, button {
-      padding: 6px 8px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    button:hover { background-color: #45a049; }
 
     .node {
       position: absolute;
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #333;
-      cursor: move;
-      min-width: 120px;
+      min-width: 100px;
       text-align: center;
-      background: #fff;
-      z-index: 20;
+      color: #222;
+      font-weight: 500;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      user-select: none;
+      cursor: move;
+      transition: background 0.2s ease;
     }
 
     .edge {
       position: absolute;
       height: 2px;
-      background-color: #333;
+      background-color: #555;
       transform-origin: 0 0;
-      z-index: 15;
+      z-index: 10;
     }
 
     #popup {
@@ -120,89 +81,71 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    ul { list-style: none; padding: 0; margin: 0; }
+    input, select, button {
+      margin-bottom: 6px;
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
 
-    /* Controles de zoom */
+    button {
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      font-weight: 500;
+      transition: background 0.2s ease;
+    }
+
+    button:hover { background-color: #0056b3; }
+
+    h2 {
+      font-size: 16px;
+      margin: 16px 0 8px;
+      color: #333;
+    }
+
     #zoomControls {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: #fff;
-      padding: 5px 10px;
+      padding: 6px 10px;
       border-radius: 6px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 100;
+      z-index: 200;
     }
+
     #zoomControls button {
       margin: 0 5px;
       font-size: 16px;
       padding: 4px 8px;
       background: #007bff;
-      border: none;
       color: #fff;
       border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    #zoomControls button:hover { background: #0056b3; }
-
-    /* Botones de ocultar paneles */
-    .toggle-panel {
-      position: absolute;
-      top: 10px;
-      width: 28px;
-      height: 28px;
-      background-color: #007bff;
-      color: white;
       border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-weight: bold;
-      z-index: 500;
-      transition: background 0.2s, transform 0.2s;
     }
-    .toggle-panel:hover { background-color: #0056b3; transform: scale(1.1); }
-    #toggleLeft { left: 10px; }
-    #toggleRight { right: 10px; }
-    body.hide-left #leftPanel { display: none; }
-    body.hide-right #rightPanel { display: none; }
   </style>
 </head>
 
 <body>
   <!-- Panel izquierdo -->
   <div id="leftPanel">
-    <h2>Crear tarea (subnodo)</h2>
-    <div class="form">
-      <input type="text" id="taskName" placeholder="Nombre de la tarea">
-      <select id="taskOwner"></select>
-      <input type="number" id="taskHours" placeholder="Horas">
-      <input type="text" id="taskDescription" placeholder="Descripción de la tarea">
-      <select id="superSelect"></select>
-      <button onclick="createNode()">Crear tarea</button>
-    </div>
+    <h2>Crear tarea</h2>
+    <input type="text" id="taskName" placeholder="Nombre de la tarea">
+    <input type="text" id="taskOwner" placeholder="Responsable">
+    <input type="number" id="taskHours" placeholder="Horas">
+    <input type="text" id="taskDescription" placeholder="Descripción">
+    <button onclick="createNode()">➕ Crear tarea</button>
 
     <h2>Crear supernodo</h2>
-    <div class="form">
-      <input type="text" id="superName" placeholder="Nombre del supernodo">
-      <select id="superOwner"></select>
-      <select id="superSelect"></select>
-      <button onclick="createSupernode()">Crear supernodo</button>
-    </div>
+    <input type="text" id="superName" placeholder="Nombre del supernodo">
+    <button onclick="createSupernode()">➕ Crear supernodo</button>
 
-    <h2>Guardar / Cargar grafo</h2>
-    <div class="form">
-      <button onclick="exportGraph()">Guardar grafo</button>
-
-      <label for="jsonSelect">Cargar grafo guardado:</label>
-      <select id="jsonSelect">
-        <option value="">-- Selecciona un archivo --</option>
-      </select>
-      <button onclick="loadSelectedGraph()">Cargar</button>
-
-      <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
-    </div>
+    <h2>Guardar grafo</h2>
+    <button onclick="exportGraph()">💾 Guardar grafo</button>
   </div>
 
   <!-- Canvas central -->
@@ -213,11 +156,7 @@
   <!-- Panel derecho -->
   <div id="rightPanel">
     <h2>Personas responsables</h2>
-    <div class="form">
-      <input type="text" id="newPersonName" placeholder="Nombre de la persona">
-      <button onclick="addPerson()">Añadir persona</button>
-      <ul id="personList"></ul>
-    </div>
+    <ul id="personList"></ul>
 
     <h2>Resumen de carga</h2>
     <ul id="personSummary"></ul>
@@ -225,117 +164,27 @@
 
   <!-- Popup -->
   <div id="popup">
-    <div class="form">
-      <label>Nombre:</label>
-      <input type="text" id="editName">
-      <label id="editOwnerLabel">Responsable:</label>
-      <select id="editOwner"></select>
-      <label id="editHoursLabel">Horas:</label>
-      <input type="number" id="editHours">
-      <label id="editSuperLabel">Supernodo:</label>
-      <select id="editSuperSelect"></select>
-      <label>Descripción:</label>
-      <input type="text" id="editDescription">
-      <button onclick="applyEdits()">Aplicar cambios</button>
-      <button onclick="deleteNode()">Eliminar nodo</button>
-      <button onclick="closePopup()">Cerrar</button>
-    </div>
+    <h3>Editar nodo</h3>
+    <label>Nombre:</label>
+    <input type="text" id="editName"><br>
+    <label>Responsable:</label>
+    <input type="text" id="editOwner"><br>
+    <label>Horas:</label>
+    <input type="number" id="editHours"><br>
+    <label>Descripción:</label>
+    <input type="text" id="editDescription"><br>
+    <button onclick="applyEdits()">Aplicar cambios</button>
+    <button onclick="deleteNode()">Eliminar nodo</button>
+    <button onclick="closePopup()">Cerrar</button>
   </div>
 
-  <!-- Controles de zoom -->
+  <!-- Zoom controls -->
   <div id="zoomControls">
-    <button id="zoomOutBtn">−</button>
-    <button id="zoomInBtn">+</button>
+    <button id="zoomOutBtn" onclick="scale*=0.9;document.getElementById('canvasContent').style.transform=`scale(${scale}) translate(${offsetX}px,${offsetY}px)`;">−</button>
+    <button id="zoomInBtn" onclick="scale*=1.1;document.getElementById('canvasContent').style.transform=`scale(${scale}) translate(${offsetX}px,${offsetY}px)`;">+</button>
   </div>
-
-  <!-- Botones de paneles -->
-  <button id="toggleLeft" class="toggle-panel">⮜</button>
-  <button id="toggleRight" class="toggle-panel">⮞</button>
 
   <!-- Scripts -->
   <script src="script-core.js"></script>
-  <script src="script-edit.js"></script>
-  <script src="script-collapse.js"></script>
-  
-  <script>
-  
-/* ============================================================
-   CARGA DE GRAFOS DESDE graphs.json
-   ============================================================ */
-async function loadAvailableGraphs() {
-  const select = document.getElementById("jsonSelect");
-  if (!select) {
-    console.error("⚠️ No se encontró el select #jsonSelect en el DOM");
-    return;
-  }
-
-  select.innerHTML = '<option value="">-- Selecciona un archivo --</option>';
-
-  try {
-    const response = await fetch("./graphs.json");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const text = await response.text();
-    console.log("📄 graphs.json cargado:", text);
-
-    let files;
-    try {
-      files = JSON.parse(text);
-    } catch (e) {
-      throw new Error("❌ Error al parsear graphs.json: " + e.message);
-    }
-
-    if (!Array.isArray(files)) throw new Error("❌ graphs.json no es un array válido.");
-
-    files.forEach(file => {
-      const opt = document.createElement("option");
-      opt.value = file.trim();
-      opt.textContent = file.split("/").pop();
-      select.appendChild(opt);
-    });
-
-    console.log(`✅ ${files.length} grafos encontrados`);
-  } catch (err) {
-    console.error("🚨 Error al cargar graphs.json:", err);
-  }
-}
-
-/* ============================================================
-   CARGA DE UN GRAFO SELECCIONADO
-   ============================================================ */
-async function loadSelectedGraph() {
-  const select = document.getElementById("jsonSelect");
-  const file = select.value;
-  if (!file) return alert("Selecciona un archivo primero");
-
-  try {
-    const res = await fetch(file);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    if (typeof importGraphFromData === "function") {
-      importGraphFromData(data);
-    } else {
-      alert("Falta la función importGraphFromData() en script-core.js");
-    }
-  } catch (err) {
-    console.error("🚨 Error al cargar el JSON:", err);
-  }
-}
-
-/* ============================================================
-   EJECUTAR AUTOMÁTICAMENTE AL CARGAR LA PÁGINA
-   ============================================================ */
-window.addEventListener("DOMContentLoaded", loadAvailableGraphs);
-</script>
-
-  <script>
-  (() => {
-    const canvas = document.getElementById("canvas");
-    const canvasContent = document.getElementById("canvasContent");
-    const zoomInBtn = document.getElementById("zoomInBtn");
-    const zoomOutBtn = docume
-
-
-
-
+</body>
+</html>
