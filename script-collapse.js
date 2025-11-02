@@ -1,65 +1,55 @@
 // Evitar redeclarar collapsedSupernodes si ya lo definió script-core.js
 if (typeof collapsedSupernodes === 'undefined') {
-  // definir como variable global
+  // definir como variable global (no usar const/let si puede haber redeclaración)
   collapsedSupernodes = new Set();
 }
 
-function enableCollapseToggle(node) {
-  node.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("collapse-icon")) return;
-    const id = node.dataset.id;
-    const collapsed = collapsedSupernodes.has(id);
+// Evitar redefinir funciones si ya están definidas en otro archivo
+if (typeof enableCollapseToggle === 'undefined') {
+  function enableCollapseToggle(node) {
+    node.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      toggleCollapse(node.dataset.id);
+    });
+  }
+}
 
-    if (collapsed) {
-      collapsedSupernodes.delete(id);
-      showChildren(id);
+if (typeof toggleCollapse === 'undefined') {
+  function toggleCollapse(superId) {
+    if (collapsedSupernodes.has(superId)) {
+      collapsedSupernodes.delete(superId);
+      showChildren(superId);
+      console.log("📂 Expandido:", superId);
     } else {
-      collapsedSupernodes.add(id);
-      hideChildren(id);
+      collapsedSupernodes.add(superId);
+      hideChildren(superId);
+      console.log("📁 Colapsado:", superId);
     }
-
-    updateSupernodeCompletionCascade(id);
-  });
+  }
 }
 
+if (typeof hideChildren === 'undefined') {
+  function hideChildren(superId) {
+    document.querySelectorAll(`.node[data-super='${superId}']`).forEach(child => {
+      child.style.display = "none";
+      if (child.dataset.type === "super") {
+        hideChildren(child.dataset.id);
+      }
+    });
 
-function hideChildren(superId) {
-  document.querySelectorAll(`.node[data-super='${superId}']`).forEach(child => {
-    child.style.display = "none";
-    if (child.dataset.type === "super") {
-      collapsedSupernodes.add(child.dataset.id);
-      hideChildren(child.dataset.id);
-      hideCollapsedTaskList(child.dataset.id);
-    }
-  });
-
-  document.querySelectorAll(`.edge[data-from='${superId}']`).forEach(edge => {
-	  const target = edge.dataset.to;
-	  const targetNode = document.querySelector(`.node[data-id='${target}']`);
-	  if (targetNode && targetNode.dataset.super === superId) {
-		edge.style.display = "none";
-	  }
-	});
-
-	document.querySelectorAll(`.edge[data-to='${superId}']`).forEach(edge => {
-	  const source = edge.dataset.from;
-	  const sourceNode = document.querySelector(`.node[data-id='${source}']`);
-	  if (sourceNode && sourceNode.dataset.super === superId) {
-		edge.style.display = "none";
-	  }
-	});
+    document.querySelectorAll(`.edge[data-from='${superId}'], .edge[data-to='${superId}']`).forEach(edge => {
+      edge.style.display = "none";
+    });
+  }
 }
 
-function showChildren(superId) {
-  document.querySelectorAll(`.node[data-super='${superId}']`).forEach(child => {
-    child.style.display = "block";
-    if (child.dataset.type === "super" && !collapsedSupernodes.has(child.dataset.id)) {
-      showChildren(child.dataset.id);
-    }
-  });
+if (typeof showChildren === 'undefined') {
+  function showChildren(superId) {
+    document.querySelectorAll(`.node[data-super='${superId}']`).forEach(child => {
+      child.style.display = "block";
+      if (child.dataset.type === "super" && !collapsedSupernodes.has(child.dataset.id)) {
+        showChildren(child.dataset.id);
+      }
+    });
 
-  document.querySelectorAll(`.edge[data-from='${superId}'], .edge[data-to='${superId}']`).forEach(edge => {
-    edge.style.display = "block";
-  });
-
-}
+    document.querySelectorAll(`.
