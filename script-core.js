@@ -623,13 +623,99 @@ function redrawEdges() {
 }
 
 /* ----------------------
-   PAN / ZOOM para canvas
+   PAN / ZOOM para canvas (completar)
    ---------------------- */
 function initCanvasInteractions() {
   const canvas = document.getElementById("canvas");
   const canvasContent = document.getElementById("canvasContent");
   let isPanning = false;
-  let startX = 0, startY = 0, panX = 0, panY = 0, scale = 1;
+  let startX = 0, startY = 0, panX = 0, panY = 0;
+  let scale = 1;
 
+  // mantener transform como translate + scale en canvasContent.style.transform
+  function applyTransform() {
+    canvasContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
+
+  // Iniciar panning con botón izquierdo cuando no se está sobre un nodo
   canvas.addEventListener("mousedown", (e) => {
-    // evita iniciar pan si el click ha sido
+    // si se ha hecho doble click en un nodo u otro control, evitar iniciar pan
+    if (e.target.closest('.node') || e.button !== 0) return;
+    isPanning = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    canvas.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    startX = e.clientX;
+    startY = e.clientY;
+    panX += dx;
+    panY += dy;
+    applyTransform();
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!isPanning) return;
+    isPanning = false;
+    canvas.style.cursor = 'grab';
+  });
+
+  // Zoom con rueda (ctrlWheel para evitar scroll normal si prefieres)
+  canvas.addEventListener("wheel", (e) => {
+    // evitar scroll de la página
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const delta = -e.deltaY;
+    const zoomFactor = 1 + (delta > 0 ? 0.05 : -0.05);
+    const prevScale = scale;
+    scale = Math.min(3, Math.max(0.2, scale * zoomFactor));
+
+    // opcional: zoom desde el punto del mouse (mantener posición relativa)
+    const rect = canvasContent.getBoundingClientRect();
+    const cx = (e.clientX - rect.left);
+    const cy = (e.clientY - rect.top);
+    panX = (panX - cx) * (scale / prevScale) + cx;
+    panY = (panY - cy) * (scale / prevScale) + cy;
+
+    applyTransform();
+    // actualizar edges posición después de transform
+    redrawEdges();
+  }, { passive: false });
+
+  // Botones de zoom en header (si existen)
+  const zoomInBtn = document.getElementById("zoomInBtn");
+  const zoomOutBtn = document.getElementById("zoomOutBtn");
+  if (zoomInBtn) zoomInBtn.addEventListener("click", () => {
+    scale = Math.min(3, scale * 1.15);
+    applyTransform();
+    redrawEdges();
+  });
+  if (zoomOutBtn) zoomOutBtn.addEventListener("click", () => {
+    scale = Math.max(0.2, scale / 1.15);
+    applyTransform();
+    redrawEdges();
+  });
+
+  // Ajustar tamaño inicial si quieres centrar
+  applyTransform();
+}
+
+/* Inicializar canvas y redibujar edges una vez DOM cargado */
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    // inicializar interacciones si existen elementos
+    if (document.getElementById("canvas") && document.getElementById("canvasContent")) {
+      initCanvasInteractions();
+    }
+    // Si hay datos para cargar, loadMainGraph podría existir; intentar llamar solo si está definido
+    if (typeof loadMainGraph === "function") {
+      loadMainGraph();
+    }
+  } catch (err) {
+    console.error("Error inicializando canvas interactions:", err);
+  }
+});
