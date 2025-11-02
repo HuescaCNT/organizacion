@@ -90,20 +90,43 @@ function updateSuperDropdown() {
   });
 }
 
-function createEdge(fromId, toId) {
-  const canvasContent = document.getElementById('canvasContent');
-  const from = document.querySelector(`.node[data-id='${fromId}']`);
-  const to = document.querySelector(`.node[data-id='${toId}']`);
-  if (!from || !to) return;
-
-  const line = document.createElement("div");
-  line.className = "edge";
-  line.dataset.from = fromId;
-  line.dataset.to = toId;
-  canvasContent.appendChild(line);
-  updateEdgePosition(line, from, to);
-  updatePersonList();
+// Wrapper seguro para evitar duplicar createEdge definido en script-core.js
+if (typeof createEdge === 'undefined') {
+  function createEdge(fromId, toId) {
+    // si script-core no define createEdge, intentamos crear una arista básica
+    const canvasContent = document.getElementById('canvasContent');
+    const from = document.querySelector(`.node[data-id='${fromId}']`);
+    const to = document.querySelector(`.node[data-id='${toId}']`);
+    if (!from || !to) return;
+    const line = document.createElement("div");
+    line.className = "edge";
+    line.dataset.from = fromId;
+    line.dataset.to = toId;
+    canvasContent.appendChild(line);
+    // usar la función de core si existe
+    if (typeof updateEdgePosition === 'function') {
+      // la versión de core espera (line, fromId, toId)
+      updateEdgePosition(line, fromId, toId);
+    } else {
+      // fallback: posición simple
+      const x1 = from.offsetLeft + from.offsetWidth / 2;
+      const y1 = from.offsetTop + from.offsetHeight / 2;
+      line.style.left = x1 + "px";
+      line.style.top = y1 + "px";
+    }
+    // actualizar resumen si existe
+    if (typeof updatePersonSummary === 'function') updatePersonSummary();
+  }
 }
+
+// safe removeEdge wrapper
+if (typeof removeEdge === 'undefined') {
+  function removeEdge(fromId, toId) {
+    const canvasContent = document.getElementById('canvasContent');
+    const edge = canvasContent.querySelector(`.edge[data-from='${fromId}'][data-to='${toId}']`);
+    if (edge) edge.remove();
+    if (typeof updatePersonSummary === 'function') updatePersonSummary();
+  }
 
 function removeEdge(fromId, toId) {
   const canvasContent = document.getElementById('canvasContent');
@@ -134,4 +157,5 @@ setInterval(() => {
     const to = document.querySelector(`.node[data-id='${line.dataset.to}']`);
     if (from && to) updateEdgePosition(line, from, to);
   });
+
 }, 100);
