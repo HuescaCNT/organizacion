@@ -522,42 +522,82 @@ function loadGraph(data) {
   updatePersonSummary();
 }
 
-let scale = 1;
-let panX = 0;
-let panY = 0;
-let isPanning = false;
-let startX = 0;
-let startY = 0;
+// === Control de zoom, pan y carga automática del grafo ===
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("canvas");
+  const content = document.getElementById("canvasContent");
 
-const canvasWrapper = document.getElementById("canvasWrapper");
-const canvasContent = document.getElementById('canvasContent');
+  // === 1️⃣ Cargar el grafo automáticamente ===
+  fetch("graphs/huescageneral.json")
+    .then(r => r.json())
+    .then(data => loadGraph(data))
+    .catch(err => console.warn("⚠️ No se pudo cargar el grafo inicial:", err));
 
-canvasWrapper.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const delta = e.deltaY > 0 ? -0.1 : 0.1;
-  scale = Math.max(0.2, Math.min(2, scale + delta));
-  updateTransform();
+  // === 2️⃣ Variables de pan y zoom ===
+  let scale = 1;
+  let panX = 0;
+  let panY = 0;
+  let isPanning = false;
+  let startX = 0;
+  let startY = 0;
+
+  // === 3️⃣ Zoom con la rueda ===
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    scale = Math.max(0.3, Math.min(3, scale + delta));
+    updateTransform();
+  });
+
+  // === 4️⃣ Pan (mover el grafo) con botón central o Ctrl + clic ===
+  canvas.addEventListener("mousedown", (e) => {
+    if (e.button !== 1 && !e.ctrlKey) return; // Botón central o Ctrl+clic
+    isPanning = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    canvas.style.cursor = "grabbing";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    updateTransform();
+  });
+
+  document.addEventListener("mouseup", () => {
+    isPanning = false;
+    canvas.style.cursor = "default";
+  });
+
+  // === 5️⃣ Zoom con botones (si existen) ===
+  const zoomInBtn = document.getElementById("zoomInBtn");
+  const zoomOutBtn = document.getElementById("zoomOutBtn");
+
+  function updateTransform() {
+    content.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
+
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener("click", () => {
+      scale = Math.min(3, scale + 0.1);
+      updateTransform();
+    });
+  }
+
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener("click", () => {
+      scale = Math.max(0.3, scale - 0.1);
+      updateTransform();
+    });
+  }
+
+  // === 6️⃣ Centrar el grafo tras la carga inicial ===
+  setTimeout(() => {
+    const centerX = (canvas.offsetWidth - content.offsetWidth) / 2;
+    const centerY = (canvas.offsetHeight - content.offsetHeight) / 2;
+    panX = centerX;
+    panY = centerY;
+    updateTransform();
+  }, 1000);
 });
-
-canvasWrapper.addEventListener("mousedown", (e) => {
-  if (e.button !== 1 && !e.ctrlKey) return; // botón central o Ctrl+clic
-  isPanning = true;
-  startX = e.clientX - panX;
-  startY = e.clientY - panY;
-});
-
-document.addEventListener("mousemove", (e) => {
-  if (!isPanning) return;
-  panX = e.clientX - startX;
-  panY = e.clientY - startY;
-  updateTransform();
-});
-
-document.addEventListener("mouseup", () => {
-  isPanning = false;
-});
-
-function updateTransform() {
-  canvasContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-}
-
