@@ -9,7 +9,21 @@ if (typeof redrawEdges === 'undefined') {
     // Si el export/import crea edges, asumimos que createEdge fue llamado en loadGraph.
     // Aquí simplemente actualizamos posiciones de cualquier .edge existente.
     document.querySelectorAll(".edge").forEach(line => {
-      updateEdgePosition(line, line.dataset.from, line.dataset.to);
+      // si updateEdgePosition acepta ids (core) o elementos (otro), intentamos ambos
+      try {
+        updateEdgePosition(line, line.dataset.from, line.dataset.to);
+      } catch (err) {
+        // fallback: intentar con elementos
+        const fromEl = document.querySelector(`.node[data-id='${line.dataset.from}']`);
+        const toEl = document.querySelector(`.node[data-id='${line.dataset.to}']`);
+        if (fromEl && toEl) {
+          // posición simple
+          const x1 = fromEl.offsetLeft + fromEl.offsetWidth / 2;
+          const y1 = fromEl.offsetTop + fromEl.offsetHeight / 2;
+          line.style.left = x1 + "px";
+          line.style.top = y1 + "px";
+        }
+      }
     });
   }
 }
@@ -57,8 +71,7 @@ function updateSupernodeCompletionCascade(superId) {
   if (!superNode) return;
   const descendants = getAllDescendantSubnodes(superId);
   const total = descendants.reduce((s, n) => s + (parseFloat(n.dataset.hours)||0), 0);
-  // considerar completado basado en hours=0 como completado? Aquí hacemos ejemplo simple:
-  // si subnodo tiene dataset.completed === "1" contar como completado; sino 0
+  // considerar completado basado en dataset.completed === "1"
   const completed = descendants.reduce((s, n) => s + ((n.dataset.completed === "1") ? (parseFloat(n.dataset.hours)||0) : 0), 0);
   const pct = total === 0 ? 0 : (completed / total) * 100;
   updateSupernodeVisual(superNode, pct);
@@ -74,8 +87,15 @@ function updateSupernodeCompletionCascade(superId) {
     label.style.display = "block";
     const sel = document.createElement("select");
     sel.id = "superOwner";
-    left.insertBefore(label, document.getElementById("superName").nextSibling);
-    left.insertBefore(sel, label.nextSibling);
+    // insert after the superName input
+    const superName = document.getElementById("superName");
+    if (superName && superName.parentNode) {
+      superName.parentNode.insertBefore(label, superName.nextSibling);
+      superName.parentNode.insertBefore(sel, label.nextSibling);
+    } else {
+      left.appendChild(label);
+      left.appendChild(sel);
+    }
   }
   if (!document.getElementById("superSelect")) {
     const label2 = document.createElement("label");
@@ -83,56 +103,17 @@ function updateSupernodeCompletionCascade(superId) {
     label2.style.display = "block";
     const sel2 = document.createElement("select");
     sel2.id = "superSelect";
-    left.insertBefore(label2, document.getElementById("importFile"));
-    left.insertBefore(sel2, label2.nextSibling);
-  }
-  // Inicializar opciones
-  updatePersonDropdowns();
-  updateSuperDropdown();
-  renderPersonList();
-  
-  // Inicializador simple que carga un grafo por defecto si no hay datos.
-// Añádelo después de script-fixes.js o pégalo al final de script-fixes.js.
-
-function loadMainGraph() {
-  // 1) Si hay variable global initialGraphData, usarla
-  if (typeof window.initialGraphData !== 'undefined' && window.initialGraphData) {
-    try {
-      loadGraph(window.initialGraphData);
-      return;
-    } catch (err) {
-      console.warn('initialGraphData presente pero loadGraph falló:', err);
+    const importFile = document.getElementById("importFile");
+    if (importFile && importFile.parentNode) {
+      importFile.parentNode.insertBefore(label2, importFile);
+      importFile.parentNode.insertBefore(sel2, label2.nextSibling);
+    } else {
+      left.appendChild(label2);
+      left.appendChild(sel2);
     }
   }
-
-  // 2) Intentar cargar un JSON estático en la raíz (huescageneral.json)
-  fetch('graphs/huescageneral.json').then(r => {
-    if (!r.ok) throw new Error('no file');
-    return r.json();
-  }).then(data => {
-    loadGraph(data);
-  }).catch(() => {
-    // 3) Si no hay nada, crear un grafo de ejemplo mínimo
-    const example = {
-      nodes: [
-        { id: 'super_1', name: 'Proyecto A', owner: 'Coordinador', description: '', hours: 0, type: 'super', left: '200px', top: '200px', super: '' },
-        { id: 'node_1', name: 'Tarea 1', owner: 'Ana', description: '', hours: 5, type: 'sub', left: '360px', top: '220px', super: 'super_1' },
-        { id: 'node_2', name: 'Tarea 2', owner: 'Luis', description: '', hours: 3, type: 'sub', left: '360px', top: '300px', super: 'super_1' }
-      ],
-      edges: [
-        { from: 'node_1', to: 'super_1' },
-        { from: 'node_2', to: 'super_1' }
-      ]
-    };
-    loadGraph(example);
-  });
-}
-
-// Ejecutar automáticamente al cargar si no hay nodos
-document.addEventListener('DOMContentLoaded', () => {
-  // No forzar si ya hay nodos en DOM
-  if (document.querySelectorAll('.node').length === 0) {
-    if (typeof loadMainGraph === 'function') loadMainGraph();
-  }
-});
-
+  // Inicializar opciones (seguras, solo si existen las funciones)
+  if (typeof updatePersonDropdowns === 'function') updatePersonDropdowns();
+  updateSuperDropdown();
+  renderPersonList();
+})();
