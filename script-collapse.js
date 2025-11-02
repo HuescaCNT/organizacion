@@ -1,4 +1,8 @@
-const collapsedSupernodes = new Set();
+// Evitar redeclarar collapsedSupernodes si ya lo definió script-core.js
+if (typeof collapsedSupernodes === 'undefined') {
+  // definir como variable global
+  collapsedSupernodes = new Set();
+}
 
 function enableCollapseToggle(node) {
   node.addEventListener("click", (e) => {
@@ -57,4 +61,5 @@ function showChildren(superId) {
   document.querySelectorAll(`.edge[data-from='${superId}'], .edge[data-to='${superId}']`).forEach(edge => {
     edge.style.display = "block";
   });
+
 }
