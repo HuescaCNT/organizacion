@@ -522,33 +522,34 @@ function loadGraph(data) {
   updatePersonSummary();
 }
 
-// === Control de zoom, pan, centrado y carga automática del grafo ===
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("canvas");
   const content = document.getElementById("canvasContent");
 
-  // === 1️⃣ Cargar el grafo automáticamente ===
-  fetch("grafo.json")
-    .then(r => r.json())
-    .then(data => {
-      loadGraph(data);
-      // Centrar tras dibujarse el grafo
-      setTimeout(centerGraph, 300);
-    })
-    .catch(err => console.warn("⚠️ No se pudo cargar el grafo inicial:", err));
-
-  // === 2️⃣ Variables de pan y zoom ===
   let scale = 1;
   let panX = 0;
   let panY = 0;
   let isPanning = false;
   let startX = 0;
   let startY = 0;
+  let hasCentered = false;
 
-  // === 3️⃣ Zoom centrado en el puntero ===
+  // Animación suave con transición CSS
+  content.style.transition = "transform 0.6s ease";
+
+  // === 1️⃣ Cargar el grafo automáticamente ===
+  fetch("grafo.json")
+    .then(r => r.json())
+    .then(data => {
+      loadGraph(data);
+      // Centrado con retardo leve para asegurar dibujo
+      setTimeout(() => centerAndFit(true), 400);
+    })
+    .catch(err => console.warn("⚠️ No se pudo cargar el grafo inicial:", err));
+
+  // === 2️⃣ Zoom centrado en el puntero ===
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
-
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -557,19 +558,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const zoom = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
     const newScale = Math.max(0.3, Math.min(3, scale * zoom));
 
-    // Mantener el punto bajo el ratón fijo
     panX = mouseX - (mouseX - panX) * (newScale / scale);
     panY = mouseY - (mouseY - panY) * (newScale / scale);
     scale = newScale;
     updateTransform();
   });
 
-  // === 4️⃣ Pan (mover el grafo) ===
+  // === 3️⃣ Pan (mover el grafo) ===
   canvas.addEventListener("mousedown", (e) => {
     if (e.button !== 1 && !e.ctrlKey) return; // botón central o Ctrl+clic
     isPanning = true;
     startX = e.clientX - panX;
     startY = e.clientY - panY;
+    content.style.transition = "none";
     canvas.style.cursor = "grabbing";
   });
 
@@ -582,47 +583,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("mouseup", () => {
     isPanning = false;
-    canvas.style.cursor = "default";
+    canvas.style.cursor = "grab";
+    content.style.transition = "transform 0.3s ease";
   });
 
-  // === 5️⃣ Zoom con botones ===
-  const zoomInBtn = document.getElementById("zoomInBtn");
-  const zoomOutBtn = document.getElementById("zoomOutBtn");
+  // === 4️⃣ Zoom con botones ===
+  document.getElementById("zoomInBtn").addEventListener("click", () => changeZoom(1.2));
+  document.getElementById("zoomOutBtn").addEventListener("click", () => changeZoom(1 / 1.2));
 
-  function updateTransform() {
-    content.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  function changeZoom(factor) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const newScale = Math.max(0.3, Math.min(3, scale * factor));
+    panX = cx - (cx - panX) * (newScale / scale);
+    panY = cy - (cy - panY) * (newScale / scale);
+    scale = newScale;
+    updateTransform();
   }
 
-  if (zoomInBtn) {
-    zoomInBtn.addEventListener("click", () => {
-      scale = Math.min(3, scale * 1.2);
-      updateTransform();
-    });
-  }
-
-  if (zoomOutBtn) {
-    zoomOutBtn.addEventListener("click", () => {
-      scale = Math.max(0.3, scale / 1.2);
-      updateTransform();
-    });
-  }
-
-  // === 6️⃣ Centrar el grafo correctamente ===
-  function centerGraph() {
+  // === 5️⃣ Centrado automático con reducción ===
+  function centerAndFit(initial = false) {
     const cw = canvas.offsetWidth;
     const ch = canvas.offsetHeight;
     const gw = content.scrollWidth || content.offsetWidth;
     const gh = content.scrollHeight || content.offsetHeight;
 
-    // Si aún no tiene tamaño, reintentar en un momento
     if (!gw || !gh) {
-      setTimeout(centerGraph, 200);
+      setTimeout(() => centerAndFit(initial), 200);
       return;
     }
 
-    panX = (cw - gw) / 2;
-    panY = (ch - gh) / 2;
-    scale = 1;
+    if (initial && hasCentered) return;
+    hasCentered = true;
+
+    // Calcula la escala que encaje el grafo completo en pantalla
+    const scaleFit = Math.min(cw / gw, ch / gh) * 0.9; // 0.9 = pequeño margen
+    scale = Math.min(1, scaleFit); // nunca ampliar más de 1
+    panX = (cw - gw * scale) / 2;
+    panY = (ch - gh * scale) / 2;
     updateTransform();
   }
+
+  // === 6️⃣ Aplicar transformaciones ===
+  function updateTransform() {
+    content.style.transformOrigin = "0 0";
+    content.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
+
+  // === 7️⃣ Botón extra de centrado manual ===
+  const centerBtn = document.createElement("button");
+  centerBtn.textContent = "Centrar grafo";
+  centerBtn.style.position = "absolute";
+  centerBtn.style.top = "70px";
+  centerBtn.style.left = "50%";
+  centerBtn.style.transform = "translateX(-50%)";
+  centerBtn.style.background = "#007bff";
+  centerBtn.style.color = "#fff";
+  centerBtn.style.border = "none";
+  centerBtn.style.padding = "6px 10px";
+  centerBtn.style.borderRadius = "6px";
+  centerBtn.style.cursor = "pointer";
+  centerBtn.onclick = () => centerAndFit(false);
+  document.body.appendChild(centerBtn);
 });
