@@ -531,8 +531,6 @@ let startY = 0;
 
 const canvasWrapper = document.getElementById("canvasWrapper");
 const canvasContent = document.getElementById('canvasContent');
-canvasContent.appendChild(nuevoNodo);
-
 
 canvasWrapper.addEventListener("wheel", (e) => {
   e.preventDefault();
@@ -562,3 +560,4 @@ document.addEventListener("mouseup", () => {
 function updateTransform() {
   canvasContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
 }
+
