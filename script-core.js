@@ -538,7 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
   content.style.transition = "transform 0.6s ease";
 
   // === 1️⃣ Cargar el grafo automáticamente ===
-  fetch("grafo.json")
+  fetch("graphs/huescageneral.json")
     .then(r => r.json())
     .then(data => {
       loadGraph(data);
@@ -647,3 +647,4 @@ document.addEventListener("DOMContentLoaded", () => {
   centerBtn.onclick = () => centerAndFit(false);
   document.body.appendChild(centerBtn);
 });
+
