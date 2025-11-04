@@ -148,65 +148,68 @@ function createSupernode() {
 /* -----------------------
    Utilidades de creación y posición
 ----------------------- */
-function makeNodeElement({ id, name, owner = "", hours = 0, super: sup = "", type = "sub", description = "" }) {
+function makeNodeElement(n) {
   const node = document.createElement("div");
-  node.className = "node";
-  node.dataset.id = id;
-  node.dataset.name = name;
-  node.dataset.owner = owner;
-  node.dataset.hours = hours;
-  node.dataset.super = sup;
-  node.dataset.type = type;
-  node.dataset.description = description;
-  node.dataset.descVisible = "false";
+  node.classList.add("node");
+  node.dataset.id = n.id || `node-${nodeCounter++}`;
+  node.dataset.name = n.name || "Nodo";
+  node.dataset.owner = n.owner || "";
+  node.dataset.hours = n.hours || 0;
+  node.dataset.super = n.super || "";
+  node.dataset.type = n.type || "task";
+  node.dataset.description = n.description || "";
 
-  if (type === "sub") updateNodeVisual(node);
-  else updateSupernodeVisual(node, 0);
+  // Posición inicial segura (usa coordenadas o las genera aleatoriamente)
+  const posX = parseFloat(n.x) || Math.random() * 1200 + 100;
+  const posY = parseFloat(n.y) || Math.random() * 900 + 100;
+  node.style.left = posX + "px";
+  node.style.top = posY + "px";
+  node.style.zIndex = 20;
 
+  // Contenido interno
+  node.innerHTML = `
+    <strong>${node.dataset.name}</strong><br>
+    <small>${node.dataset.owner || ""}</small>
+    ${node.dataset.hours ? `<div>${node.dataset.hours}h</div>` : ""}
+  `;
+
+  // Habilitar interacciones
   makeDraggable(node);
   enablePopupEdit(node);
-  return node;
-}
+  if (node.dataset.type === "super") enableCollapseToggle(node);
 
-function positionRandomly(node) {
-  const cw = canvasContent.offsetWidth || 2000;
-  const ch = canvasContent.offsetHeight || 2000;
-  const w = 140, h = 70;
-  const x = Math.max(0, Math.random() * (cw - w));
-  const y = Math.max(0, Math.random() * (ch - h));
-  node.style.left = `${x}px`;
-  node.style.top = `${y}px`;
+  return node;
 }
 
 /* -----------------------
    Drag & Drop
 ----------------------- */
 function makeDraggable(element) {
-  let offsetX = 0, offsetY = 0, dragging = false;
+  let dragging = false;
+  let offsetX, offsetY;
 
   element.addEventListener("mousedown", (e) => {
-    if (e.button === 2) return; // click derecho abre popup
+    e.stopPropagation(); // ✅ evita que el canvas capture el evento
+    if (e.button === 2) return; // botón derecho = popup
     dragging = true;
     offsetX = e.clientX - element.offsetLeft;
     offsetY = e.clientY - element.offsetTop;
     document.body.style.userSelect = "none";
   });
 
-  document.addEventListener("mousemove", (e) => {
+  window.addEventListener("mousemove", (e) => {
     if (!dragging) return;
-    element.style.left = (e.clientX - offsetX) + "px";
-    element.style.top = (e.clientY - offsetY) + "px";
+    element.style.left = e.clientX - offsetX + "px";
+    element.style.top = e.clientY - offsetY + "px";
     edgesDirty = true;
   });
 
-  document.addEventListener("mouseup", () => {
-    if (dragging) {
-      dragging = false;
-      document.body.style.userSelect = "";
-      edgesDirty = true;
-    }
+  window.addEventListener("mouseup", () => {
+    dragging = false;
+    document.body.style.userSelect = "";
   });
 }
+
 
 /* -----------------------
    Aristas (edges)
@@ -714,4 +717,5 @@ function toggleRightPanel() {
    Fin del script
 ----------------------- */
 console.log("✅ script.js unificado y optimizado cargado correctamente");
+
 
