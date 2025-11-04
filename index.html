@@ -266,18 +266,22 @@
   <!-- Script principal -->
   <script src="script.js"></script>
 
-  <!-- Doble clic para centrar -->
-  <script>
-    const canvas = document.getElementById("canvas");
-    const canvasContent = document.getElementById("canvasContent");
-    canvas.addEventListener("dblclick", e => {
+ <script>
+  // Doble clic para centrar el grafo sin redeclarar variables globales
+  document.addEventListener("DOMContentLoaded", () => {
+    const cv = document.getElementById("canvas");
+    const cvContent = document.getElementById("canvasContent");
+    cv.addEventListener("dblclick", e => {
       if (!e.target.closest(".node")) {
-        canvas.scrollLeft = (canvasContent.scrollWidth - canvas.clientWidth) / 2;
-        canvas.scrollTop = (canvasContent.scrollHeight - canvas.clientHeight) / 2;
+        cv.scrollLeft = (cvContent.scrollWidth - cv.clientWidth) / 2;
+        cv.scrollTop = (cvContent.scrollHeight - cv.clientHeight) / 2;
       }
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
+
 
 
