@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Distribución Militancia CNT</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #f0f2f5;
+    }
+
+    #leftPanel {
+      width: 280px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+      resize: horizontal;
+      min-width: 180px;
+      max-width: 400px;
+      z-index: 10;
+    }
+
+    #canvas {
+      flex: 1;
+      position: relative;
+      background-color: #f9f9f9;
+      border: none;
+      overflow: auto;
+      cursor: grab;
+      z-index: 5;
+    }
+
+    #canvas:active { cursor: grabbing; }
+
+    #canvas::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    #canvasContent {
+      position: relative;
+      width: 2000px;
+      height: 2000px;
+      transform-origin: 0 0;
+      transition: transform 0.1s ease;
+      background-color: transparent;
+      z-index: 2;
+    }
+
+    #rightPanel {
+      width: 240px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-left: 1px solid #ddd;
+      overflow-y: auto;
+      resize: horizontal;
+      min-width: 180px;
+      max-width: 400px;
+      z-index: 10;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      padding: 6px 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover { background-color: #45a049; }
+
+    .node {
+      position: absolute;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      cursor: move;
+      min-width: 120px;
+      z-index: 20;
+      text-align: center;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+      background: #fff;
+    }
+
+    .edge { position: absolute; height: 2px; z-index: 15; background-color: #333; transform-origin: 0 0; }
+
+    #popup {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #333;
+      padding: 10px;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    ul { list-style: none; padding: 0; margin: 0; }
+
+    #zoomControls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      padding: 5px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+
+    #zoomControls button {
+      margin: 0 5px;
+      font-size: 16px;
+      padding: 4px 8px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    #zoomControls button:hover { background-color: #0056b3; }
+
+    /* Botones para ocultar paneles */
+    .toggle-panel {
+      position: absolute;
+      top: 10px;
+      width: 28px;
+      height: 28px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 500;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .toggle-panel:hover {
+      background-color: #0056b3;
+      transform: scale(1.1);
+    }
+    #toggleLeft { left: 10px; }
+    #toggleRight { right: 10px; }
+    body.hide-left #leftPanel { display: none; }
+    body.hide-right #rightPanel { display: none; }
+  </style>
+</head>
+
+<body>
+  <!-- Panel izquierdo -->
+  <div id="leftPanel">
+    <h2>Crear tarea (subnodo)</h2>
+    <div class="form">
+      <input type="text" id="taskName" placeholder="Nombre de la tarea">
+      <select id="taskOwner"></select>
+      <input type="number" id="taskHours" placeholder="Horas">
+      <input type="text" id="taskDescription" placeholder="Descripción de la tarea">
+      <select id="superSelect"></select>
+      <button onclick="createNode()">Crear tarea</button>
+    </div>
+
+    <h2>Crear supernodo</h2>
+    <div class="form">
+      <input type="text" id="superName" placeholder="Nombre del supernodo">
+      <select id="superOwner"></select>
+      <select id="superSelect"></select>
+      <button onclick="createSupernode()">Crear supernodo</button>
+    </div>
+
+    <h2>Guardar / Cargar grafo</h2>
+    <div class="form">
+      <button onclick="exportGraph()">Guardar grafo</button>
+
+      <label for="jsonSelect">Cargar grafo guardado:</label>
+      <select id="jsonSelect">
+        <option value="">-- Selecciona un archivo --</option>
+      </select>
+      <button onclick="loadSelectedGraph()">Cargar</button>
+
+      <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
+    </div>
+  </div>
+
+  <!-- Canvas central -->
+  <div id="canvas">
+    <div id="canvasContent"></div>
+  </div>
+
+  <!-- Panel derecho -->
+  <div id="rightPanel">
+    <h2>Personas responsables</h2>
+    <div class="form">
+      <input type="text" id="newPersonName" placeholder="Nombre de la persona">
+      <button onclick="addPerson()">Añadir persona</button>
+      <ul id="personList"></ul>
+    </div>
+
+    <h2>Resumen de carga</h2>
+    <ul id="personSummary"></ul>
+  </div>
+
+  <!-- Popup -->
+  <div id="popup">
+    <div class="form">
+      <label>Nombre:</label>
+      <input type="text" id="editName">
+      <label id="editOwnerLabel">Responsable:</label>
+      <select id="editOwner"></select>
+      <label id="editHoursLabel">Horas:</label>
+      <input type="number" id="editHours">
+      <label id="editSuperLabel">Supernodo:</label>
+      <select id="editSuperSelect"></select>
+      <label>Descripción:</label>
+      <input type="text" id="editDescription">
+      <button onclick="applyEdits()">Aplicar cambios</button>
+      <button onclick="deleteNode()">Eliminar nodo</button>
+      <button onclick="closePopup()">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Controles de zoom -->
+  <div id="zoomControls">
+    <button id="zoomOutBtn">−</button>
+    <button id="zoomInBtn">+</button>
+  </div>
+
+  <!-- Botones ocultar paneles -->
+  <button id="toggleLeft" class="toggle-panel">⮜</button>
+  <button id="toggleRight" class="toggle-panel">⮞</button>
+
+  <!-- Scripts -->
+  <script src="script-core.js"></script>
+  <script src="script-edit.js"></script>
+  <script src="script-collapse.js"></script>
+
+  <!-- Pan, Zoom y Ocultar Paneles -->
+  <script>
+  (() => {
+    const canvas = document.getElementById("canvas");
+    const canvasContent = document.getElementById("canvasContent");
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+
+    /* Zoom */
+    let zoomLevel = 1;
+    const MIN_ZOOM = 0.2, MAX_ZOOM = 3;
+    const applyZoom = () => canvasContent.style.transform = `scale(${zoomLevel})`;
+    const doZoomIn = () => { zoomLevel = Math.min(MAX_ZOOM, zoomLevel + 0.1); applyZoom(); };
+    const doZoomOut = () => { zoomLevel = Math.max(MIN_ZOOM, zoomLevel - 0.1); applyZoom(); };
+
+    zoomInBtn.addEventListener("click", doZoomIn);
+    zoomOutBtn.addEventListener("click", doZoomOut);
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + (e.deltaY < 0 ? 0.1 : -0.1)));
+      applyZoom();
+    }, { passive: false });
+
+    /* Panning */
+    let isPanning = false, startX, startY, scrollLeft, scrollTop;
+    canvas.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".node") || e.target.closest("#popup")) return;
+      isPanning = true;
+      canvas.style.cursor = "grabbing";
+      startX = e.clientX; startY = e.clientY;
+      scrollLeft = canvas.scrollLeft; scrollTop = canvas.scrollTop;
+      document.body.style.userSelect = "none";
+    });
+    window.addEventListener("mouseup", () => { isPanning = false; canvas.style.cursor = "grab"; document.body.style.userSelect = ""; });
+    canvas.addEventListener("mousemove", (e) => {
+      if (!isPanning) return;
+      canvas.scrollLeft = scrollLeft - (e.clientX - startX);
+      canvas.scrollTop = scrollTop - (e.clientY - startY);
+    });
+
+    applyZoom();
+    canvas.style.cursor = "grab";
+
+    /* Ocultar paneles */
+    const toggleLeftBtn = document.getElementById("toggleLeft");
+    const toggleRightBtn = document.getElementById("toggleRight");
+    toggleLeftBtn.addEventListener("click", () => {
+      document.body.classList.toggle("hide-left");
+      toggleLeftBtn.textContent = document.body.classList.contains("hide-left") ? "⮞" : "⮜";
+    });
+    toggleRightBtn.addEventListener("click", () => {
+      document.body.classList.toggle("hide-right");
+      toggleRightBtn.textContent = document.body.classList.contains("hide-right") ? "⮜" : "⮞";
+    });
+  })();
+
+  /* Guardar grafo como JSON descargable */
+  function exportGraph() {
+    try {
+      const data = typeof getGraphData === "function" ? getGraphData() : window.graphData;
+      if (!data) return alert("No se encontró ningún grafo para exportar.");
+      const now = new Date();
+      const filename = "grafo_" + now.toISOString().replace(/[:.]/g, "-") + ".json";
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      alert(`✅ Grafo exportado como: ${filename}\n📁 Sube este archivo a "graphs/" y agrégalo en graphs.json`);
+    } catch (err) { console.error(err); alert("❌ Error al exportar el grafo."); }
+  }
+
+  /* Cargar lista de grafos desde graphs.json */
+  async function loadAvailableGraphs() {
+    try {
+      const res = await fetch("graphs.json");
+      const files = await res.json();
+      const select = document.getElementById("jsonSelect");
+      select.innerHTML = '<option value="">-- Selecciona un archivo --</option>';
+      files.forEach(file => {
+        const opt = document.createElement("option");
+        opt.value = file;
+        opt.textContent = file.split("/").pop();
+        select.appendChild(opt);
+      });
+    } catch (err) { console.error("Error al cargar graphs.json:", err); }
+  }
+
+  async function loadSelectedGraph() {
+    const select = document.getElementById("jsonSelect");
+    const file = select.value;
+    if (!file) return alert("Selecciona un archivo primero");
+    try {
+      const res = await fetch(file);
+      const data = await res.json();
+      console.log("Grafo cargado:", data);
+      if (typeof importGraphFromData === "function") importGraphFromData(data);
+      else alert("Agrega la función importGraphFromData() para importar el grafo.");
+    } catch (err) { alert("Error al cargar el JSON: " + err); }
+  }
+
+  window.addEventListener("DOMContentLoaded", loadAvailableGraphs);
+  </script>
+</body>
+</html>
+
