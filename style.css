@@ -85,4 +85,9 @@ h1, h2 {
   color: #333;
   white-space: normal; 
 }
+.canvas-inner {
+  transition: transform 0.05s linear;
+
+}
+
 
