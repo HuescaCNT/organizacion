@@ -125,75 +125,72 @@
   </style>
 </head>
 <body>
-  <div id="leftPanel">
-    <h2>Crear tarea (subnodo)</h2>
-    <div class="form">
-      <input type="text" id="taskName" placeholder="Nombre de la tarea">
-      <select id="taskOwner"></select>
-      <input type="number" id="taskHours" placeholder="Horas">
-      <input type="text" id="taskDescription" placeholder="Descripción de la tarea">
-      <select id="superSelect"></select>
-      <button onclick="createNode()">Crear tarea</button>
-    </div>
 
-    <h2>Crear supernodo</h2>
-    <div class="form">
-      <input type="text" id="superName" placeholder="Nombre del supernodo">
-      <select id="superOwner"></select>
-      <select id="superSelect"></select>
-      <button onclick="createSupernode()">Crear supernodo</button>
-    </div>
+<div id="leftPanel">
+  <h2>Crear tarea (subnodo)</h2>
+	<div class="form">
+	  <input type="text" id="taskName" placeholder="Nombre de la tarea">
+	  <select id="taskOwner"></select>
+	  <input type="number" id="taskHours" placeholder="Horas">
+	  <input type="text" id="taskDescription" placeholder="Descripción de la tarea">
+	  <select id="superSelect"></select>
+	  <button onclick="createNode()">Crear tarea</button>
+	</div>
 
-    <h2>Guardar / Cargar grafo</h2>
-    <div class="form">
-      <button onclick="exportGraph()">Guardar grafo</button>
-      <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
-    </div>
+  <h2>Crear supernodo</h2>
+  <div class="form">
+    <input type="text" id="superName" placeholder="Nombre del supernodo">
+    <select id="superOwner"></select>
+    <select id="superSelect"></select>
+    <button onclick="createSupernode()">Crear supernodo</button>
   </div>
 
-  <div id="mainArea">
-    <div id="canvasWrapper">
-      <div id="canvas"></div>
-    </div>
-    <div id="controls">
-      <button id="togglePanels">🖥️ Pantalla completa</button>
-    </div>
+  <h2>Guardar / Cargar grafo</h2>
+  <div class="form">
+    <button onclick="exportGraph()">Guardar grafo</button>
+    <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
+  </div>
+</div>
+
+<div id="canvas"></div>
+
+<div id="rightPanel">
+  <h2>Personas responsables</h2>
+  <div class="form">
+    <input type="text" id="newPersonName" placeholder="Nombre de la persona">
+    <button onclick="addPerson()">Añadir persona</button>
+    <ul id="personList"></ul>
   </div>
 
-  <div id="rightPanel">
-    <h2>Personas responsables</h2>
-    <div class="form">
-      <input type="text" id="newPersonName" placeholder="Nombre de la persona">
-      <button onclick="addPerson()">Añadir persona</button>
-      <ul id="personList"></ul>
-    </div>
+  <h2>Resumen de carga</h2>
+  <ul id="personSummary"></ul>
+</div>
 
-    <h2>Resumen de carga</h2>
-    <ul id="personSummary"></ul>
+<div id="popup">
+  <div class="form">
+    <label>Nombre:</label>
+    <input type="text" id="editName">
+    <label id="editOwnerLabel">Responsable:</label>
+    <select id="editOwner"></select>
+    <label id="editHoursLabel">Horas:</label>
+    <input type="number" id="editHours">
+    <label id="editSuperLabel">Supernodo:</label>
+    <select id="editSuperSelect"></select>
+	<label>Descripción:</label>
+	<input type="text" id="editDescription">
+    <button onclick="applyEdits()">Aplicar cambios</button>
+    <button onclick="deleteNode()">Eliminar nodo</button>
+    <button onclick="closePopup()">Cerrar</button>
   </div>
+</div>
 
-  <div id="popup">
-    <div class="form">
-      <label>Nombre:</label>
-      <input type="text" id="editName">
-      <label id="editOwnerLabel">Responsable:</label>
-      <select id="editOwner"></select>
-      <label id="editHoursLabel">Horas:</label>
-      <input type="number" id="editHours">
-      <label id="editSuperLabel">Supernodo:</label>
-      <select id="editSuperSelect"></select>
-      <label>Descripción:</label>
-      <input type="text" id="editDescription">
-      <button onclick="applyEdits()">Aplicar cambios</button>
-      <button onclick="deleteNode()">Eliminar nodo</button>
-      <button onclick="closePopup()">Cerrar</button>
-    </div>
-  </div>
+<script src="script-core.js"></script>
+<script src="script-edit.js"></script>
+<script src="script-collapse.js"></script>
 
-  <script src="script-core.js"></script>
-  <script src="script-edit.js"></script>
-  <script src="script-collapse.js"></script>
 </body>
-
-
 </html>
+<!-- Botón de pantalla completa -->
+<div id="controls">
+  <button id="togglePanels">🖥️ Pantalla completa</button>
+</div>
