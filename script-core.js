@@ -559,8 +559,12 @@ document.addEventListener("mouseup", () => {
 
 function updateTransform() {
   canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-}
 // === PAN, ZOOM Y PANTALLA COMPLETA ===
+
+let canvas = document.getElementById("canvas");
+let leftPanel = document.getElementById("leftPanel");
+let rightPanel = document.getElementById("rightPanel");
+let toggleBtn = document.getElementById("togglePanels");
 
 let scale = 1;
 let offsetX = 0;
@@ -568,14 +572,9 @@ let offsetY = 0;
 let isPanning = false;
 let startX, startY;
 
-const canvas = document.getElementById("canvas");
-const leftPanel = document.getElementById("leftPanel");
-const rightPanel = document.getElementById("rightPanel");
-const toggleBtn = document.getElementById("togglePanels");
-
-// Panning
+// --- PANNING ---
 canvas.addEventListener("mousedown", (e) => {
-  if (e.target === canvas) {
+  if (e.target.id === "canvas") { // solo si clicas fondo
     isPanning = true;
     startX = e.clientX - offsetX;
     startY = e.clientY - offsetY;
@@ -593,7 +592,7 @@ window.addEventListener("mouseup", () => {
   isPanning = false;
 });
 
-// Zoom con rueda
+// --- ZOOM ---
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
   const zoomIntensity = 0.1;
@@ -607,12 +606,15 @@ function updateCanvasTransform() {
   canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
 }
 
-// Ocultar / mostrar paneles
-let panelsHidden = false;
-toggleBtn.addEventListener("click", () => {
-  panelsHidden = !panelsHidden;
-  leftPanel.classList.toggle("hidden", panelsHidden);
-  rightPanel.classList.toggle("hidden", panelsHidden);
-  toggleBtn.textContent = panelsHidden ? "↩️ Mostrar paneles" : "🖥️ Pantalla completa";
-});
+// --- PANTALLA COMPLETA ---
+if (toggleBtn) {
+  let panelsHidden = false;
+  toggleBtn.addEventListener("click", () => {
+    panelsHidden = !panelsHidden;
+    leftPanel.classList.toggle("hidden", panelsHidden);
+    rightPanel.classList.toggle("hidden", panelsHidden);
+    toggleBtn.textContent = panelsHidden ? "↩️ Mostrar paneles" : "🖥️ Pantalla completa";
+  });
+}
 
+}
