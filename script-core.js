@@ -521,6 +521,26 @@ function loadGraph(data) {
   updateSuperDropdown();
   updatePersonSummary();
 }
+// === ASEGURAR CANVAS-INNER EXISTE Y CONTIENE LOS NODOS ===
+(function ensureCanvasInner() {
+  const canvas = document.getElementById("canvas");
+  if (!canvas) return;
+  let inner = canvas.querySelector(".canvas-inner");
+  if (!inner) {
+    inner = document.createElement("div");
+    inner.className = "canvas-inner";
+    inner.style.position = "absolute";
+    inner.style.left = "0";
+    inner.style.top = "0";
+    inner.style.width = "100%";
+    inner.style.height = "100%";
+    inner.style.transformOrigin = "0 0";
+    // mover hijos actuales dentro
+    const children = Array.from(canvas.childNodes);
+    children.forEach(c => inner.appendChild(c));
+    canvas.appendChild(inner);
+  }
+})();
 
 // === PANNING ROBUSTO (pegar AL FINAL de script-core.js) ===
 (function () {
@@ -639,6 +659,7 @@ function loadGraph(data) {
     console.log("[PANNING] inicializado sobre #canvas");
   });
 })();
+
 
 
 
