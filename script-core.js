@@ -560,3 +560,59 @@ document.addEventListener("mouseup", () => {
 function updateTransform() {
   canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
 }
+// === PAN, ZOOM Y PANTALLA COMPLETA ===
+
+let scale = 1;
+let offsetX = 0;
+let offsetY = 0;
+let isPanning = false;
+let startX, startY;
+
+const canvas = document.getElementById("canvas");
+const leftPanel = document.getElementById("leftPanel");
+const rightPanel = document.getElementById("rightPanel");
+const toggleBtn = document.getElementById("togglePanels");
+
+// Panning
+canvas.addEventListener("mousedown", (e) => {
+  if (e.target === canvas) {
+    isPanning = true;
+    startX = e.clientX - offsetX;
+    startY = e.clientY - offsetY;
+  }
+});
+
+window.addEventListener("mousemove", (e) => {
+  if (!isPanning) return;
+  offsetX = e.clientX - startX;
+  offsetY = e.clientY - startY;
+  updateCanvasTransform();
+});
+
+window.addEventListener("mouseup", () => {
+  isPanning = false;
+});
+
+// Zoom con rueda
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const zoomIntensity = 0.1;
+  const wheel = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
+  scale *= wheel;
+  scale = Math.min(Math.max(0.2, scale), 3);
+  updateCanvasTransform();
+});
+
+function updateCanvasTransform() {
+  canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+}
+
+// Ocultar / mostrar paneles
+let panelsHidden = false;
+toggleBtn.addEventListener("click", () => {
+  panelsHidden = !panelsHidden;
+  leftPanel.classList.toggle("hidden", panelsHidden);
+  rightPanel.classList.toggle("hidden", panelsHidden);
+  toggleBtn.textContent = panelsHidden ? "↩️ Mostrar paneles" : "🖥️ Pantalla completa";
+});
+
