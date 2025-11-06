@@ -559,51 +559,68 @@ document.addEventListener("mouseup", () => {
 
 function updateTransform() {
   canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-// === PAN, ZOOM Y PANTALLA COMPLETA ===
+// === PAN, ZOOM Y PANTALLA COMPLETA FUNCIONAL ===
 
-let canvas = document.getElementById("canvas");
-let leftPanel = document.getElementById("leftPanel");
-let rightPanel = document.getElementById("rightPanel");
-let toggleBtn = document.getElementById("togglePanels");
+// Seleccionamos el contenedor principal del grafo
+const canvasContainer = document.getElementById("canvas");
+const leftPanel = document.getElementById("leftPanel");
+const rightPanel = document.getElementById("rightPanel");
+const toggleBtn = document.getElementById("togglePanels");
 
-let scale = 1;
-let offsetX = 0;
-let offsetY = 0;
+// Variables de control
 let isPanning = false;
-let startX, startY;
+let startX = 0, startY = 0;
+let translateX = 0, translateY = 0;
+let scale = 1;
 
 // --- PANNING ---
-canvas.addEventListener("mousedown", (e) => {
-  if (e.target.id === "canvas") { // solo si clicas fondo
+canvasContainer.addEventListener("mousedown", (e) => {
+  // Solo si clicas en el fondo (no en un nodo ni enlace)
+  if (e.target === canvasContainer || e.target.tagName === "svg") {
     isPanning = true;
-    startX = e.clientX - offsetX;
-    startY = e.clientY - offsetY;
+    startX = e.clientX - translateX;
+    startY = e.clientY - translateY;
+    canvasContainer.style.cursor = "grabbing";
   }
 });
 
 window.addEventListener("mousemove", (e) => {
   if (!isPanning) return;
-  offsetX = e.clientX - startX;
-  offsetY = e.clientY - startY;
-  updateCanvasTransform();
+  translateX = e.clientX - startX;
+  translateY = e.clientY - startY;
+  applyTransform();
 });
 
 window.addEventListener("mouseup", () => {
   isPanning = false;
+  canvasContainer.style.cursor = "default";
 });
 
 // --- ZOOM ---
-canvas.addEventListener("wheel", (e) => {
+canvasContainer.addEventListener("wheel", (e) => {
   e.preventDefault();
   const zoomIntensity = 0.1;
   const wheel = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
+  const oldScale = scale;
   scale *= wheel;
   scale = Math.min(Math.max(0.2, scale), 3);
-  updateCanvasTransform();
+
+  // Zoom hacia el cursor
+  const rect = canvasContainer.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  translateX -= (mouseX / oldScale - mouseX / scale);
+  translateY -= (mouseY / oldScale - mouseY / scale);
+
+  applyTransform();
 });
 
-function updateCanvasTransform() {
-  canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+function applyTransform() {
+  const svg = canvasContainer.querySelector("svg");
+  if (svg) {
+    svg.style.transformOrigin = "0 0";
+    svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+  }
 }
 
 // --- PANTALLA COMPLETA ---
@@ -616,5 +633,5 @@ if (toggleBtn) {
     toggleBtn.textContent = panelsHidden ? "↩️ Mostrar paneles" : "🖥️ Pantalla completa";
   });
 }
-
 }
+
