@@ -166,7 +166,25 @@ h1, h2 {
 }
 #canvas:active {
   cursor: grabbing;
+
+#canvas {
+  overflow: hidden;
+  position: relative;
 }
+#canvas svg {
+  transform-origin: 0 0;
+  transition: transform 0.05s linear;
+  cursor: grab;
+}
+#canvas svg:active {
+  cursor: grabbing;
+}
+.hidden {
+  display: none !important;
+}
+
+}
+
 
 
 
