@@ -131,5 +131,43 @@ h1, h2 {
   width: 2000px;
   height: 2000px;
 }
+/* === PAN, ZOOM Y PANTALLA COMPLETA === */
+
+#controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 999;
+}
+
+#controls button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#controls button:hover {
+  background: #3e8e41;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Aseguramos que el canvas se pueda transformar */
+#canvas {
+  transform-origin: 0 0;
+  transition: transform 0.05s linear;
+  cursor: grab;
+}
+#canvas:active {
+  cursor: grabbing;
+}
+
+
 
 
