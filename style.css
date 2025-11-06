@@ -1,0 +1,102 @@
+/* style.css - añadidos para pan/zoom y layout básico */
+
+:root{
+  --panel-width: 320px;
+  --bg: #ffffff;
+  --panel-bg: #f3f3f3;
+  --accent: #4CAF50;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--bg);
+}
+
+.panel{
+  width: var(--panel-width);
+  background: var(--panel-bg);
+  height: 100vh;
+  overflow:auto;
+  box-sizing: border-box;
+  padding: 12px;
+  position: fixed;
+  top: 0;
+  z-index: 800;
+}
+
+.panel.left{ left: 0; }
+.panel.right{ right: 0; }
+
+#mainArea{
+  margin-left: var(--panel-width);
+  margin-right: var(--panel-width);
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+#canvas{
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+#canvas.canvas-ready{
+  /* cuando el canvas tenga svg, permitir interacciones */
+}
+
+/* SVG transform styles */
+#canvas svg {
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+#canvas svg:active { cursor: grabbing; }
+
+/* Controls */
+#controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+#controls button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+#controls button:hover{ opacity: 0.95; }
+
+/* Hidden helper */
+.hidden { display: none !important; }
+
+/* Popup basic */
+#popup {
+  position: fixed;
+  left: 50%;
+  top: 10%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  z-index: 1200;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px){
+  .panel{ display:none; }
+  #mainArea{ margin:0; }
+}
