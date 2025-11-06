@@ -559,4 +559,53 @@ document.addEventListener("mouseup", () => {
 
 function updateTransform() {
   canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+// === PANNING SUAVE DEL CANVAS ===
+// No interfiere con nodos ni eventos existentes.
+
+(function() {
+  const canvas = document.getElementById("canvas");
+  if (!canvas) return;
+
+  let isPanning = false;
+  let startX = 0, startY = 0;
+  let offsetX = 0, offsetY = 0;
+
+  // Crear un contenedor interno si no existe (para poder moverlo)
+  let inner = canvas.querySelector(".canvas-inner");
+  if (!inner) {
+    inner = document.createElement("div");
+    inner.className = "canvas-inner";
+    while (canvas.firstChild) inner.appendChild(canvas.firstChild);
+    canvas.appendChild(inner);
+  }
+
+  // Estilos base para que funcione el desplazamiento
+  inner.style.position = "absolute";
+  inner.style.left = "0px";
+  inner.style.top = "0px";
+  inner.style.transformOrigin = "0 0";
+
+  canvas.addEventListener("mousedown", (e) => {
+    if (e.target === canvas) { // solo fondo
+      isPanning = true;
+      startX = e.clientX - offsetX;
+      startY = e.clientY - offsetY;
+      canvas.style.cursor = "grabbing";
+    }
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    offsetX = e.clientX - startX;
+    offsetY = e.clientY - startY;
+    inner.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  });
+
+  window.addEventListener("mouseup", () => {
+    isPanning = false;
+    canvas.style.cursor = "default";
+  });
+})();
+
 }
+
