@@ -529,7 +529,7 @@ let isPanning = false;
 let startX = 0;
 let startY = 0;
 
-const canvasWrapper = document.getElementById("canvasWrapper");
+
 const canvas = document.getElementById("canvas");
 
 canvasWrapper.addEventListener("wheel", (e) => {
@@ -725,5 +725,6 @@ function updateTransform() {
     console.log("[PANNING] inicializado sobre #canvas");
   });
 })();
+
 
 
