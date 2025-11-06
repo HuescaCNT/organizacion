@@ -608,4 +608,122 @@ function updateTransform() {
 })();
 
 }
+// === PANNING ROBUSTO (pegar AL FINAL de script-core.js) ===
+(function () {
+  const canvas = document.getElementById("canvas");
+  if (!canvas) return;
+
+  // Espera a DOM completo si es necesario
+  function whenReady(fn) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+
+  whenReady(() => {
+    // Si ya hay canvas-inner, reutilizar; si no, crear y mover hijos dentro
+    let inner = canvas.querySelector(".canvas-inner");
+    if (!inner) {
+      inner = document.createElement("div");
+      inner.className = "canvas-inner";
+      // Mantener tamaño relativo, posición absoluta para permitir transform
+      inner.style.position = "absolute";
+      inner.style.left = "0px";
+      inner.style.top = "0px";
+      inner.style.width = "100%";
+      inner.style.height = "100%";
+      inner.style.transformOrigin = "0 0";
+      inner.style.transition = "transform 0.05s linear";
+
+      // Mover los hijos actuales dentro de inner (manteniendo referencias DOM)
+      // Guardamos en array para evitar problemas con live collection
+      const children = Array.from(canvas.childNodes);
+      children.forEach((n) => inner.appendChild(n));
+      canvas.appendChild(inner);
+    } else {
+      // Aseguramos estilos si ya existía
+      inner.style.position = inner.style.position || "absolute";
+      inner.style.left = inner.style.left || "0px";
+      inner.style.top = inner.style.top || "0px";
+      inner.style.transformOrigin = inner.style.transformOrigin || "0 0";
+      inner.style.transition = inner.style.transition || "transform 0.05s linear";
+    }
+
+    // Variables de estado
+    let isPanning = false;
+    let startX = 0, startY = 0;
+    let offsetX = 0, offsetY = 0;
+
+    // Helper: determina si el evento se originó dentro de un "nodo"
+    function isEventInsideNode(el) {
+      while (el && el !== canvas) {
+        if (el.classList && (el.classList.contains("node") || el.classList.contains("no-pan"))) return true;
+        if (el.hasAttribute && el.hasAttribute("data-node")) return true; // soporte alternativo
+        el = el.parentElement;
+      }
+      return false;
+    }
+
+    // Mouse events
+    canvas.addEventListener("mousedown", (e) => {
+      // Solo si clicas el fondo (no dentro de un .node ni dentro de elementos con .no-pan)
+      if (e.button !== 0) return; // solo botón izquierdo
+      if (isEventInsideNode(e.target)) return;
+      isPanning = true;
+      startX = e.clientX - offsetX;
+      startY = e.clientY - offsetY;
+      canvas.style.cursor = "grabbing";
+      e.preventDefault();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isPanning) return;
+      offsetX = e.clientX - startX;
+      offsetY = e.clientY - startY;
+      inner.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (!isPanning) return;
+      isPanning = false;
+      canvas.style.cursor = "default";
+    });
+
+    // Touch events (para pantallas táctiles)
+    canvas.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return; // solo un dedo
+      const touch = e.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (isEventInsideNode(target)) return;
+      isPanning = true;
+      startX = touch.clientX - offsetX;
+      startY = touch.clientY - offsetY;
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", (e) => {
+      if (!isPanning || e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      offsetX = touch.clientX - startX;
+      offsetY = touch.clientY - startY;
+      inner.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", () => {
+      isPanning = false;
+    });
+
+    // Exponer pequeñas utilidades para depuración (opcional)
+    window.__canvasPan = {
+      getOffset: () => ({ x: offsetX, y: offsetY }),
+      setOffset: (x, y) => {
+        offsetX = x || 0; offsetY = y || 0;
+        inner.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      }
+    };
+
+    console.log("[PANNING] inicializado sobre #canvas");
+  });
+})();
+
 
