@@ -1,32 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Distribución Militancia CNT</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
+    html, body {
       margin: 0;
-      display: flex;
-      height: 100vh;
+      padding: 0;
+      height: 100%;
       overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
       background-color: #f0f2f5;
+    }
+
+    #mainContainer {
+      display: flex;
+      height: 100%;
+      width: 100%;
     }
 
     #leftPanel {
       width: 280px;
-      padding: 20px;
+      padding: 120px 20px 20px 20px; /* <-- bajamos el contenido por el logo */
       background-color: #ffffff;
       border-right: 1px solid #ddd;
       overflow-y: auto;
+      box-sizing: border-box;
+      transition: opacity 0.3s ease, width 0.3s ease;
     }
 
-    #canvas {
+    #canvasWrapper {
       flex: 1;
       position: relative;
-      background-color: #f9f9f9;
-      border: none;
       overflow: hidden;
+      background-color: #f9f9f9;
+      cursor: grab;
+    }
+
+    #canvasWrapper:active { cursor: grabbing; }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
     }
 
     #rightPanel {
@@ -35,135 +53,101 @@
       background-color: #ffffff;
       border-left: 1px solid #ddd;
       overflow-y: auto;
+      box-sizing: border-box;
+      transition: opacity 0.3s ease, width 0.3s ease;
     }
 
-    h2 {
-      font-size: 16px;
-      margin-top: 20px;
-      margin-bottom: 10px;
-      color: #333;
-    }
+    h2 { font-size: 16px; margin-top: 20px; margin-bottom: 10px; color: #333; }
+    .form { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+    input, select, button { padding:6px 8px; font-size:14px; border:1px solid #ccc; border-radius:4px; }
+    button { background-color:#4CAF50; color:white; border:none; cursor:pointer; transition:background 0.2s ease; }
+    button:hover { background-color:#45a049; }
 
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
+    .node { position:absolute; padding:10px; border-radius:6px; border:1px solid #333; cursor:move; min-width:120px; z-index:2; text-align:center; box-shadow:2px 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
+    .edge { position:absolute; height:2px; z-index:1; background-color:#333; transform-origin:0 0; }
 
-    input, select, button {
-      padding: 6px 8px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+    #popup { position:absolute; background:white; border:1px solid #333; padding:10px; display:none; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+    ul { list-style:none; padding:0; margin:0; }
 
-    button {
-      background-color: #4CAF50;
+    /* === Botón pantalla completa (azul) === */
+    #fullscreenBtn {
+      position: fixed;
+      top: 100px; /* debajo del logo */
+      left: 20px;
+      z-index: 3000;
+      background-color: #2196F3;
       color: white;
       border: none;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .node {
-      position: absolute;
-      padding: 10px;
+      padding: 10px 14px;
       border-radius: 6px;
-      border: 1px solid #333;
-      cursor: move;
-      min-width: 120px;
-	  z-index: 2;
-      text-align: center;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: background 0.3s ease, transform 0.1s ease;
     }
+    #fullscreenBtn:hover { background-color: #1976D2; transform: scale(1.05); }
 
-    .edge {
-      position: absolute;
-      height: 2px;
-	  z-index: 1;
-      background-color: #333;
-      transform-origin: 0 0;
-    }
-
-    #popup {
-      position: absolute;
-      background-color: white;
-      border: 1px solid #333;
-      padding: 10px;
-      display: none;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    #personList input {
+    /* === Logo === */
+    #logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 3001;
       width: 100px;
-    }
-
-    #personList li {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-
-    #personSummary {
-      font-size: 14px;
-      padding-left: 16px;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+      height: auto;
+      user-select: none;
     }
   </style>
 </head>
 <body>
 
-<div id="leftPanel">
-  <h2>Crear tarea (subnodo)</h2>
-	<div class="form">
-	  <input type="text" id="taskName" placeholder="Nombre de la tarea">
-	  <select id="taskOwner"></select>
-	  <input type="number" id="taskHours" placeholder="Horas">
-	  <input type="text" id="taskDescription" placeholder="Descripción de la tarea">
-	  <select id="superSelect"></select>
-	  <button onclick="createNode()">Crear tarea</button>
-	</div>
+<!-- LOGO -->
+<img id="logo" src="LOGO.png" alt="Logo CNT" />
 
-  <h2>Crear supernodo</h2>
-  <div class="form">
-    <input type="text" id="superName" placeholder="Nombre del supernodo">
-    <select id="superOwner"></select>
-    <select id="superSelect"></select>
-    <button onclick="createSupernode()">Crear supernodo</button>
+<!-- Botón pantalla completa -->
+<button id="fullscreenBtn">Pantalla completa</button>
+
+<div id="mainContainer">
+  <div id="leftPanel">
+    <h2>Crear tarea (subnodo)</h2>
+    <div class="form">
+      <input type="text" id="taskName" placeholder="Nombre de la tarea">
+      <select id="taskOwner"></select>
+      <input type="number" id="taskHours" placeholder="Horas">
+      <input type="text" id="taskDescription" placeholder="Descripción de la tarea">
+      <select id="superSelect"></select>
+      <button onclick="createNode()">Crear tarea</button>
+    </div>
+
+    <h2>Crear supernodo</h2>
+    <div class="form">
+      <input type="text" id="superName" placeholder="Nombre del supernodo">
+      <select id="superOwner"></select>
+      <select id="superSelect"></select>
+      <button onclick="createSupernode()">Crear supernodo</button>
+    </div>
+
+    <h2>Guardar / Cargar grafo</h2>
+    <div class="form">
+      <button onclick="exportGraph()">Guardar grafo</button>
+      <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
+    </div>
   </div>
 
-  <h2>Guardar / Cargar grafo</h2>
-  <div class="form">
-    <button onclick="exportGraph()">Guardar grafo</button>
-    <input type="file" id="importFile" accept=".json" onchange="importGraph(event)">
-  </div>
-</div>
-
-<div id="canvas"></div>
-
-<div id="rightPanel">
-  <h2>Personas responsables</h2>
-  <div class="form">
-    <input type="text" id="newPersonName" placeholder="Nombre de la persona">
-    <button onclick="addPerson()">Añadir persona</button>
-    <ul id="personList"></ul>
+  <div id="canvasWrapper">
+    <div id="canvas"></div>
   </div>
 
-  <h2>Resumen de carga</h2>
-  <ul id="personSummary"></ul>
+  <div id="rightPanel">
+    <h2>Personas responsables</h2>
+    <div class="form">
+      <input type="text" id="newPersonName" placeholder="Nombre de la persona">
+      <button onclick="addPerson()">Añadir persona</button>
+      <ul id="personList"></ul>
+    </div>
+
+    <h2>Resumen de carga</h2>
+    <ul id="personSummary"></ul>
+  </div>
 </div>
 
 <div id="popup">
@@ -176,8 +160,8 @@
     <input type="number" id="editHours">
     <label id="editSuperLabel">Supernodo:</label>
     <select id="editSuperSelect"></select>
-	<label>Descripción:</label>
-	<input type="text" id="editDescription">
+    <label>Descripción:</label>
+    <input type="text" id="editDescription">
     <button onclick="applyEdits()">Aplicar cambios</button>
     <button onclick="deleteNode()">Eliminar nodo</button>
     <button onclick="closePopup()">Cerrar</button>
@@ -187,6 +171,90 @@
 <script src="script-core.js"></script>
 <script src="script-edit.js"></script>
 <script src="script-collapse.js"></script>
+
+<!-- Script paneo + zoom + fullscreen -->
+<script>
+(function () {
+  'use strict';
+
+  const fsBtn = document.getElementById('fullscreenBtn');
+  const left = document.getElementById('leftPanel');
+  const right = document.getElementById('rightPanel');
+  const wrapper = document.getElementById('canvasWrapper');
+  const canvas = document.getElementById('canvas');
+
+  let panActive = false;
+  let panStart = { x: 0, y: 0 };
+  let panOffset = { x: 0, y: 0 };
+  let scale = 1;
+
+  const updateTransform = () => {
+    canvas.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`;
+  };
+
+  // Pantalla completa
+  fsBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      left.style.width = '0'; right.style.width = '0';
+      left.style.opacity = '0'; right.style.opacity = '0';
+      fsBtn.textContent = 'Salir de pantalla completa';
+    } else {
+      document.exitFullscreen();
+      left.style.width = '280px'; right.style.width = '240px';
+      left.style.opacity = '1'; right.style.opacity = '1';
+      fsBtn.textContent = 'Pantalla completa';
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+      left.style.width = '280px'; right.style.width = '240px';
+      left.style.opacity = '1'; right.style.opacity = '1';
+      fsBtn.textContent = 'Pantalla completa';
+    }
+  });
+
+  // Paneo
+  wrapper.addEventListener('mousedown', e => {
+    if (e.target.closest('.node')) return;
+    panActive = true;
+    panStart.x = e.clientX - panOffset.x;
+    panStart.y = e.clientY - panOffset.y;
+    wrapper.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!panActive) return;
+    panOffset.x = e.clientX - panStart.x;
+    panOffset.y = e.clientY - panStart.y;
+    updateTransform();
+  });
+
+  document.addEventListener('mouseup', () => {
+    panActive = false;
+    wrapper.style.cursor = 'grab';
+  });
+
+  // Zoom centrado
+  wrapper.addEventListener('wheel', e => {
+    if (e.ctrlKey) return;
+    e.preventDefault();
+    const zoomIntensity = 0.1;
+    const zoom = Math.exp(-e.deltaY * zoomIntensity / 100);
+    const rect = wrapper.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const prevScale = scale;
+    scale = Math.min(Math.max(scale * zoom, 0.2), 3);
+    panOffset.x = cx - (cx - panOffset.x) * (scale / prevScale);
+    panOffset.y = cy - (cy - panOffset.y) * (scale / prevScale);
+    updateTransform();
+  });
+
+  updateTransform();
+})();
+</script>
 
 </body>
 </html>
