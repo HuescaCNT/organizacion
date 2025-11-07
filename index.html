@@ -172,6 +172,52 @@
 <script src="script-edit.js"></script>
 <script src="script-collapse.js"></script>
 
+<script>
+(function () {
+  // Aplica los estilos inline a un nodo si es supernodo
+  function applySuperStyle(node) {
+    if (!node || !node.dataset) return;
+    if (node.dataset.type === 'super') {
+      node.style.borderWidth = '6px';
+      node.style.borderStyle = 'solid';
+      node.style.borderColor = 'rgba(0.45, 0.30, 264)';
+      node.style.borderRadius = '30px';
+      node.style.padding = '12px 14px';
+      node.style.boxShadow = '0 8px 20px rgba(0.45, 0.30, 264)';
+      // no tocamos backgroundColor ni color
+    } else {
+      // opcional: asegurar subnodos más discretos
+      // node.style.borderWidth = '1px';
+      // node.style.borderStyle = 'solid';
+      // node.style.borderColor = 'transparent';
+      // node.style.borderRadius = '8px';
+      // node.style.boxShadow = '0 2px 5px rgba(0,0,0,0.08)';
+    }
+  }
+
+  // Aplicar a los ya existentes
+  const canvas = document.getElementById('canvas');
+  if (canvas) {
+    canvas.querySelectorAll('.node').forEach(n => applySuperStyle(n));
+
+    // Observador para nodos nuevos (creados dinámicamente)
+    const mo = new MutationObserver(muts => {
+      muts.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1 && node.classList && node.classList.contains('node')) {
+            // pequeño timeout para que dataset y contenido estén listos
+            setTimeout(() => applySuperStyle(node), 0);
+          }
+        });
+      });
+    });
+
+    mo.observe(canvas, { childList: true, subtree: false });
+  }
+})();
+</script>
+
+
 <!-- Script paneo + zoom + fullscreen -->
 <script>
 (function () {
